@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体背景アニメーション</title>
+    <!-- p5.jsライブラリを読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <!-- Google Fontsから丸ゴシック体を読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS変数でテーマカラーを定義 */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --button-bg-color: rgba(0, 0, 0, 0.05);
+            --button-border-color: rgba(0, 0, 0, 0.2);
+            --button-hover-bg-color: rgba(0, 0, 0, 0.1);
+            --text-shadow-color: rgba(255, 255, 255, 0.7);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --button-bg-color: rgba(255, 255, 255, 0.1);
+            --button-border-color: rgba(255, 255, 255, 0.5);
+            --button-hover-bg-color: rgba(255, 255, 255, 0.2);
+            --text-shadow-color: rgba(0, 0, 0, 0.7);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-color);
+            transition: background-color 0.5s ease;
+        }
+
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            flex-direction: column;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #text-overlay {
+            position: relative;
+            z-index: 2;
+            color: var(--text-color);
+            font-family: 'M PLUS Rounded 1c', 'Arial Rounded MT Bold', sans-serif;
+            font-size: 120px;
+            font-weight: 800;
+            text-align: center;
+            text-shadow: 0px 0px 25px var(--text-shadow-color);
+            padding: 0 20px;
+            transition: color 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        #button-container {
+            position: absolute;
+            bottom: 50px;
+            z-index: 3;
+        }
+
+        #generate-button {
+            background-color: var(--button-bg-color);
+            border: 2px solid var(--button-border-color);
+            color: var(--text-color);
+            padding: 15px 30px;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--button-hover-bg-color);
+        }
+
+        #generate-button:hover {
+            background-color: var(--button-hover-bg-color);
+            box-shadow: 0 0 25px var(--button-hover-bg-color);
+        }
+
+        #generate-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            #text-overlay { font-size: 80px; }
+            #generate-button { font-size: 16px; padding: 12px 24px; }
+        }
+        @media (max-width: 480px) {
+            #text-overlay { font-size: 48px; }
+            #generate-button { font-size: 14px; padding: 10px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="text-overlay">準備中</div>
+        <div id="button-container">
+            <button id="generate-button">次は何色かな？</button>
+        </div>
+    </div>
+    <script>
+        // --- グローバル変数 ---
+        let particles = [];
+        const numParticles = 50; // 玉の数を調整
+        let p5_bgColor; // p5.js用の背景色オブジェクト
+
+        // 初期カラーパレット
+        let colorPalette = [
+            '#E0FBFC', '#C2DFE3', '#AEECEF', '#86BBD8',
+            '#97C1A9', '#C6E2E9', '#F4F1DE', '#E8DAB2',
+            '#BDE4A8', '#A2D5AB', '#87C38F', '#6B9D7F'
+        ];
+
+        // --- p5.js スケッチ ---
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('canvas-container');
+            
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            p5_bgColor = isDarkMode ? color(0, 0, 0) : color(255, 255, 255);
+
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+            background(p5_bgColor);
+        }
+
+        function draw() {
+            background(red(p5_bgColor), green(p5_bgColor), blue(p5_bgColor), 25);
+
+            // 各パーティクルの状態を更新
+            for (let particle of particles) {
+                particle.update();
+            }
+
+            // 衝突判定と処理
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    particles[i].checkCollision(particles[j]);
+                }
+            }
+            
+            // 画面端の処理と描画
+            for (let particle of particles) {
+                particle.edges();
+                particle.show();
+            }
+        }
+
+        // --- Particle クラス ---
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.pos = createVector(random(width), random(height));
+                this.vel = createVector(0, 0);
+                this.speed = random(0.5, 2.5);
+                this.angle = random(TWO_PI);
+                this.angleIncrement = random(-0.02, 0.02);
+                this.sinCoeff = random(-2, 2);
+                this.cosCoeff = random(-2, 2);
+                this.lastCoeffChange = millis();
+                this.prevPos = this.pos.copy();
+                this.color = random(colorPalette);
+                this.size = random(40, 80); // 大きさの範囲を変更
+                this.mass = this.size * 0.5; // 質量を設定
+                this.birthTime = millis();
+            }
+
+            update() {
+                if (millis() - this.lastCoeffChange > 1000) {
+                    this.sinCoeff = random(-2, 2);
+                    this.cosCoeff = random(-2, 2);
+                    this.lastCoeffChange = millis();
+                }
+                
+                this.angle += this.angleIncrement;
+                this.vel.x = cos(this.angle) * this.cosCoeff * this.speed;
+                this.vel.y = sin(this.angle) * this.sinCoeff * this.speed;
+                this.pos.add(this.vel);
+
+                if (millis() - this.birthTime > 30000) {
+                    this.reset();
+                }
+            }
+
+            checkCollision(other) {
+                let distanceVect = p5.Vector.sub(other.pos, this.pos);
+                let distance = distanceVect.mag();
+                let minDistance = this.size / 2 + other.size / 2;
+
+                if (distance < minDistance) {
+                    // 衝突応答
+                    let distanceCorrection = (minDistance - distance) / 2.0;
+                    let d = distanceVect.copy();
+                    let correctionVector = d.normalize().mult(distanceCorrection);
+                    other.pos.add(correctionVector);
+                    this.pos.sub(correctionVector);
+
+                    // 運動量保存則に基づいた速度の交換
+                    let v1 = this.vel;
+                    let v2 = other.vel;
+                    let m1 = this.mass;
+                    let m2 = other.mass;
+
+                    let newVelX1 = (v1.x * (m1 - m2) + (2 * m2 * v2.x)) / (m1 + m2);
+                    let newVelY1 = (v1.y * (m1 - m2) + (2 * m2 * v2.y)) / (m1 + m2);
+                    let newVelX2 = (v2.x * (m2 - m1) + (2 * m1 * v1.x)) / (m1 + m2);
+                    let newVelY2 = (v2.y * (m2 - m1) + (2 * m1 * v1.y)) / (m1 + m2);
+
+                    this.vel.x = newVelX1;
+                    this.vel.y = newVelY1;
+                    other.vel.x = newVelX2;
+                    other.vel.y = newVelY2;
+                }
+            }
+
+            show() {
+                let c = color(this.color);
+                drawingContext.shadowBlur = this.size * 0.75;
+                drawingContext.shadowColor = c;
+                noStroke(); // 線を消して円にする
+                fill(c);
+                ellipse(this.pos.x, this.pos.y, this.size);
+                drawingContext.shadowBlur = 0;
+            }
+
+            edges() {
+                if (this.pos.x < this.size / 2 || this.pos.x > width - this.size / 2) {
+                    this.vel.x *= -1;
+                }
+                if (this.pos.y < this.size / 2 || this.pos.y > height - this.size / 2) {
+                    this.vel.y *= -1;
+                }
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            background(p5_bgColor);
+            for (let particle of particles) {
+                particle.reset();
+            }
+        }
+
+        // --- テーマ切り替え & Gemini API ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateButton = document.getElementById('generate-button');
+            const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+            const applyTheme = (isDark) => {
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                if (typeof p5_bgColor !== 'undefined') {
+                    p5_bgColor = isDark ? color(0, 0, 0) : color(255, 255, 255);
+                }
+            };
+
+            applyTheme(colorSchemeQuery.matches);
+            colorSchemeQuery.addEventListener('change', e => applyTheme(e.matches));
+
+            generateButton.addEventListener('click', async () => {
+                const originalButtonText = "次は何色かな？";
+                generateButton.textContent = '生成中...';
+                generateButton.disabled = true;
+
+                try {
+                    const prompt = "美しい流体アニメーションに合う、調和のとれたパステルカラーの配色を12色、16進数カラーコードのJSON配列形式で生成してください。例: [\"#RRGGBB\", \"#RRGGBB\"]";
+                    const newPaletteText = await callGemini(prompt);
+                    const newPalette = JSON.parse(newPaletteText);
+                    
+                    if (Array.isArray(newPalette) && newPalette.length > 0) {
+                        colorPalette = newPalette;
+                    } else {
+                        throw new Error("Invalid palette format");
+                    }
+
+                } catch (error) {
+                    console.error('Error generating palette:', error);
+                } finally {
+                    generateButton.disabled = false;
+                    generateButton.textContent = originalButtonText;
+                }
+            });
+        });
+
+        // Gemini APIを呼び出す関数
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            // generationConfigを追加してJSON出力を強制
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        description: "12色の16進数カラーコードのリスト。",
+                        items: {
+                            type: "STRING",
+                            pattern: "^#[0-9a-fA-F]{6}$"
+                        }
+                    }
+                }
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+                    const result = await response.json();
+                    
+                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        return result.candidates[0].content.parts[0].text.trim();
+                    } else {
+                        throw new Error('Invalid response structure from API');
+                    }
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed:`, error);
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
