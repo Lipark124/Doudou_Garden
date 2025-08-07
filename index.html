@@ -2,17 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ズーム防止機能を追加したviewport設定 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>逗逗の夢</title>
     <!-- Google Fontsから丸ゴシック体を読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght=800&display=swap" rel="stylesheet">
     <style>
         /* CSS変数でテーマカラーを定義 */
         :root {
             --bg-color: #ffffff;
-            --text-color: #000000;
             --button-bg-color: rgba(0, 0, 0, 0.05);
             --button-border-color: rgba(0, 0, 0, 0.2);
             --button-hover-bg-color: rgba(0, 0, 0, 0.1);
@@ -23,7 +23,6 @@
 
         [data-theme="dark"] {
             --bg-color: #000000;
-            --text-color: #ffffff;
             --button-bg-color: rgba(255, 255, 255, 0.1);
             --button-border-color: rgba(255, 255, 255, 0.5);
             --button-hover-bg-color: rgba(255, 255, 255, 0.2);
@@ -66,20 +65,17 @@
             text-align: center;
             padding: 0 20px;
             
-            /* グラデーションテキストの設定 */
             background: linear-gradient(0deg, var(--gradient-color-2), var(--gradient-color-1), var(--gradient-color-2));
             background-size: 100% 200%;
             color: transparent;
             -webkit-background-clip: text;
             background-clip: text;
             
-            /* 白いアウターグロウに変更 */
             filter: 
                 drop-shadow(0 0 5px rgba(255, 255, 255, 0.9)) 
                 drop-shadow(0 0 15px rgba(255, 255, 255, 0.6))
                 drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
             
-            /* グラデーションアニメーション */
             animation: gradient-scroll 5s ease-in-out infinite;
         }
 
@@ -98,7 +94,9 @@
         #generate-button {
             background-color: var(--button-bg-color);
             border: 2px solid var(--button-border-color);
-            color: var(--text-color);
+            /* ボタンの文字色はテーマの背景色と逆にする */
+            color: var(--bg-color); 
+            -webkit-text-fill-color: initial; /* グラデーションを継承しないように */
             padding: 15px 30px;
             font-family: 'M PLUS Rounded 1c', sans-serif;
             font-size: 18px;
@@ -114,21 +112,16 @@
             box-shadow: 0 0 25px var(--button-hover-bg-color);
         }
 
-        #generate-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        @media (max-width: 1024px) { /* タブレット対応 */
+        @media (max-width: 1024px) {
             #text-overlay { font-size: 100px; }
             #generate-button { font-size: 16px; padding: 12px 24px; }
         }
         
-        @media (max-width: 768px) { /* スマートフォン（横向き）など */
+        @media (max-width: 768px) {
             #text-overlay { font-size: 80px; }
         }
 
-        @media (max-width: 480px) { /* スマートフォン（縦向き） */
+        @media (max-width: 480px) {
             #text-overlay { font-size: 48px; }
             #generate-button { font-size: 14px; padding: 10px 20px; }
         }
@@ -143,11 +136,12 @@
         </div>
     </div>
     <script>
-        // --- ★★★ デバッグ用設定 ★★★ ---
-        // 'FULL'   : フル解像度（高負荷・最高画質）
-        // 'HALF'   : 1/4解像度（推奨・最適化版）
-        // 'QUARTER': 1/16解像度（超軽量・低画質）
-        const BLUR_MODE = 'QUARTER';
+        // --- ★★★ パフォーマンス設定 ★★★ ---
+        // 'FULL'   : フル解像度（高負荷）
+        // 'HALF'   : 1/4解像度（推奨）
+        // 'QUARTER': 1/16解像度
+        // 'EIGHTH' : 1/64解像度（超軽量）
+        const BLUR_MODE = 'EIGHTH'; 
         // ------------------------------------
 
         // --- グローバル変数 ---
@@ -158,9 +152,7 @@
         
         let voronoiProgram, blurProgram;
         let quadBuffer;
-        let fboFull1, fboFull2, fboTextureFull1, fboTextureFull2;
-        let fboHalf1, fboHalf2, fboTextureHalf1, fboTextureHalf2;
-        let fboQuarter1, fboQuarter2, fboTextureQuarter1, fboTextureQuarter2;
+        let fbo = {}; // フレームバッファオブジェクトをまとめて管理
         let spatialGrid;
 
         let colorPalette = [
@@ -179,8 +171,6 @@
             attribute vec2 a_position;
             varying vec2 v_texcoord;
             void main() {
-                // テクスチャ座標をフラグメントシェーダーに渡す
-                // (0, 0)が左下、(1, 1)が右上になるように変換
                 v_texcoord = a_position * 0.5 + 0.5;
                 gl_Position = vec4(a_position, 0.0, 1.0);
             }
@@ -213,9 +203,9 @@
         const blurFragShader = `
             precision mediump float;
             uniform sampler2D u_texture;
-            uniform vec2 u_resolution; // ★ ソーステクスチャの解像度
+            uniform vec2 u_resolution;
             uniform vec2 u_direction;
-            varying vec2 v_texcoord; // ★ 頂点シェーダーから受け取るテクスチャ座標
+            varying vec2 v_texcoord;
 
             float gaussian(float x, float sigma) {
                 return exp(-(x * x) / (2.0 * sigma * sigma));
@@ -224,14 +214,11 @@
             void main() {
                 vec3 final_color = vec3(0.0);
                 float total_weight = 0.0;
-                float sigma = 20.0;
+                float sigma = 15.0;
 
-                // エラー修正：ループの範囲を定数に変更
-                for (float i = -25.0; i <= 25.0; i++) {
+                for (float i = -20.0; i <= 20.0; i++) {
                     float weight = gaussian(i, sigma);
-                    // オフセットはソーステクスチャの解像度に基づいて計算
                     vec2 offset = u_direction * i / u_resolution;
-                    // gl_FragCoordではなくv_texcoordを基準にサンプリング
                     final_color += texture2D(u_texture, v_texcoord + offset).rgb * weight;
                     total_weight += weight;
                 }
@@ -270,42 +257,26 @@
         function draw() {
             updateParticles();
 
+            let scale, fboA, fboB, texA, texB;
+
             switch(BLUR_MODE) {
                 case 'FULL':
-                    drawFullRes();
+                    scale = 1.0; fboA = fbo.full1; fboB = fbo.full2; texA = fbo.texFull1; texB = fbo.texFull2;
                     break;
                 case 'QUARTER':
-                    drawScaledRes(0.25, fboQuarter1, fboQuarter2, fboTextureQuarter1, fboTextureQuarter2);
+                    scale = 0.25; fboA = fbo.quarter1; fboB = fbo.quarter2; texA = fbo.texQuarter1; texB = fbo.texQuarter2;
+                    break;
+                case 'EIGHTH':
+                    scale = 0.125; fboA = fbo.eighth1; fboB = fbo.eighth2; texA = fbo.texEighth1; texB = fbo.texEighth2;
                     break;
                 case 'HALF':
                 default:
-                    drawScaledRes(0.5, fboHalf1, fboHalf2, fboTextureHalf1, fboTextureHalf2);
+                    scale = 0.5; fboA = fbo.half1; fboB = fbo.half2; texA = fbo.texHalf1; texB = fbo.texHalf2;
                     break;
             }
+            drawScaledRes(scale, fboA, fboB, texA, texB);
             
             requestAnimationFrame(draw);
-        }
-        
-        // フル解像度描画
-        function drawFullRes() {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fboFull1);
-            gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.useProgram(voronoiProgram);
-            setupShaderAttributes(voronoiProgram);
-            setVoronoiUniforms(1.0);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fboFull2);
-            gl.useProgram(blurProgram);
-            setupShaderAttributes(blurProgram);
-            setBlurUniforms(fboTextureFull1, [1, 0], canvas.width, canvas.height);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.useProgram(blurProgram);
-            setupShaderAttributes(blurProgram);
-            setBlurUniforms(fboTextureFull2, [0, 1], canvas.width, canvas.height);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
 
         // スケール指定描画
@@ -425,21 +396,20 @@
             const fullW = canvas.width, fullH = canvas.height;
             const halfW = Math.floor(fullW/2), halfH = Math.floor(fullH/2);
             const quarterW = Math.floor(fullW/4), quarterH = Math.floor(fullH/4);
+            const eighthW = Math.floor(fullW/8), eighthH = Math.floor(fullH/8);
 
-            let fb = createFramebuffer(fullW, fullH);
-            fboFull1 = fb.fbo; fboTextureFull1 = fb.texture;
-            fb = createFramebuffer(fullW, fullH);
-            fboFull2 = fb.fbo; fboTextureFull2 = fb.texture;
+            let fb;
+            fb = createFramebuffer(fullW, fullH); fbo.full1 = fb.fbo; fbo.texFull1 = fb.texture;
+            fb = createFramebuffer(fullW, fullH); fbo.full2 = fb.fbo; fbo.texFull2 = fb.texture;
 
-            fb = createFramebuffer(halfW, halfH);
-            fboHalf1 = fb.fbo; fboTextureHalf1 = fb.texture;
-            fb = createFramebuffer(halfW, halfH);
-            fboHalf2 = fb.fbo; fboTextureHalf2 = fb.texture;
+            fb = createFramebuffer(halfW, halfH); fbo.half1 = fb.fbo; fbo.texHalf1 = fb.texture;
+            fb = createFramebuffer(halfW, halfH); fbo.half2 = fb.fbo; fbo.texHalf2 = fb.texture;
 
-            fb = createFramebuffer(quarterW, quarterH);
-            fboQuarter1 = fb.fbo; fboTextureQuarter1 = fb.texture;
-            fb = createFramebuffer(quarterW, quarterH);
-            fboQuarter2 = fb.fbo; fboTextureQuarter2 = fb.texture;
+            fb = createFramebuffer(quarterW, quarterH); fbo.quarter1 = fb.fbo; fbo.texQuarter1 = fb.texture;
+            fb = createFramebuffer(quarterW, quarterH); fbo.quarter2 = fb.fbo; fbo.texQuarter2 = fb.texture;
+            
+            fb = createFramebuffer(eighthW, eighthH); fbo.eighth1 = fb.fbo; fbo.texEighth1 = fb.texture;
+            fb = createFramebuffer(eighthW, eighthH); fbo.eighth2 = fb.fbo; fbo.texEighth2 = fb.texture;
             
             spatialGrid = new SpatialGrid(canvas.width, canvas.height, 100);
         }
