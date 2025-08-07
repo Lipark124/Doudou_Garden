@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>逗逗の夢の中</title>
-    <!-- p5.jsライブラリを読み込み -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <title>逗逗の夢</title>
     <!-- Google Fontsから丸ゴシック体を読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +16,6 @@
             --button-bg-color: rgba(0, 0, 0, 0.05);
             --button-border-color: rgba(0, 0, 0, 0.2);
             --button-hover-bg-color: rgba(0, 0, 0, 0.1);
-            --text-shadow-color: rgba(255, 255, 255, 0.7);
         }
 
         [data-theme="dark"] {
@@ -27,7 +24,6 @@
             --button-bg-color: rgba(255, 255, 255, 0.1);
             --button-border-color: rgba(255, 255, 255, 0.5);
             --button-hover-bg-color: rgba(255, 255, 255, 0.2);
-            --text-shadow-color: rgba(0, 0, 0, 0.7);
         }
 
         html, body {
@@ -61,14 +57,35 @@
         #text-overlay {
             position: relative;
             z-index: 2;
-            color: var(--text-color);
             font-family: 'M PLUS Rounded 1c', 'Arial Rounded MT Bold', sans-serif;
             font-size: 120px;
             font-weight: 800;
             text-align: center;
-            text-shadow: 0px 0px 25px var(--text-shadow-color);
             padding: 0 20px;
-            transition: color 0.5s ease, text-shadow 0.5s ease;
+            
+            /* グラデーションテキストの設定 */
+            background: linear-gradient(0deg, #8A2BE2, #4169E1, #8A2BE2);
+            background-size: 100% 200%;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            
+            /* アウターグロウをtext-shadowで表現 */
+            text-shadow:
+                0 0 7px rgba(255, 255, 255, 0.8),
+                0 0 15px rgba(65, 105, 225, 0.6), /* 明るい青の光 */
+                0 0 25px rgba(65, 105, 225, 0.4),
+                0 0 45px rgba(138, 43, 226, 0.3), /* 暗い紫の光 */
+                0 0 70px rgba(138, 43, 226, 0.2);
+            
+            /* グラデーションアニメーション */
+            animation: gradient-scroll 5s ease-in-out infinite;
+        }
+
+        @keyframes gradient-scroll {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
         }
 
         #button-container {
@@ -113,16 +130,22 @@
 </head>
 <body>
     <div id="canvas-container">
+        <canvas id="webgl-canvas"></canvas>
         <div id="text-overlay">逗逗の夢</div>
         <div id="button-container">
-            <button id="generate-button">今は壊れてるボタン。</button>
+            <button id="generate-button">次は何色かな？</button>
         </div>
     </div>
     <script>
         // --- グローバル変数 ---
+        const canvas = document.getElementById('webgl-canvas');
+        const gl = canvas.getContext('webgl');
         let particles = [];
         const numParticles = 50;
-        let voronoiShader;
+        
+        let voronoiProgram, blurProgram;
+        let quadBuffer;
+        let fbo1, fbo2, fboTexture1, fboTexture2;
 
         // 初期カラーパレット
         let colorPalette = [
@@ -132,21 +155,14 @@
         ];
 
         // --- シェーダーコード ---
-        // 頂点シェーダー (Vertex Shader): 画面全体を覆うための基本的なシェーダー
         const vertShader = `
-            attribute vec3 aPosition;
-            attribute vec2 aTexCoord;
-            varying vec2 vTexCoord;
+            attribute vec2 a_position;
             void main() {
-                vTexCoord = aTexCoord;
-                vec4 positionVec4 = vec4(aPosition, 1.0);
-                positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
-                gl_Position = positionVec4;
+                gl_Position = vec4(a_position, 0.0, 1.0);
             }
         `;
 
-        // フラグメントシェーダー (Fragment Shader): 各ピクセルの色を計算する
-        const fragShader = `
+        const voronoiFragShader = `
             precision mediump float;
             uniform vec2 u_resolution;
             uniform int u_num_points;
@@ -155,146 +171,285 @@
 
             void main() {
                 vec2 st = gl_FragCoord.xy;
-                
-                float min_dist = 1.0e10; // 最も近い点への距離
-                vec3 final_color = vec3(0.0); // 最も近い点の色
+                float min_dist = 1.0e10;
+                vec3 final_color = vec3(0.0);
 
-                // 最も近い点とその色を見つける
                 for (int i = 0; i < ${numParticles}; i++) {
                     if (i >= u_num_points) break;
-                    
                     float d = distance(st, u_points[i]);
                     if (d < min_dist) {
                         min_dist = d;
                         final_color = u_colors[i];
                     }
                 }
-                
                 gl_FragColor = vec4(final_color, 1.0);
             }
         `;
-
-        // --- p5.js スケッチ ---
-        function setup() {
-            // レンダラーをWEBGLに変更
-            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
-            canvas.parent('canvas-container');
+        
+        const blurFragShader = `
+            precision mediump float;
+            uniform sampler2D u_texture;
+            uniform vec2 u_resolution;
+            uniform vec2 u_direction;
             
-            // シェーダーをコンパイル
-            voronoiShader = createShader(vertShader, fragShader);
+            float gaussian(float x, float sigma) {
+                return exp(-(x * x) / (2.0 * sigma * sigma));
+            }
 
+            void main() {
+                vec2 uv = gl_FragCoord.xy / u_resolution;
+                vec3 final_color = vec3(0.0);
+                float total_weight = 0.0;
+                float sigma = 40.0; // ぼかしの強度をさらに強化
+
+                // ループの範囲を定数に変更
+                for (float i = -50.0; i <= 50.0; i++) {
+                    float weight = gaussian(i, sigma);
+                    vec2 offset = u_direction * i / u_resolution;
+                    final_color += texture2D(u_texture, uv + offset).rgb * weight;
+                    total_weight += weight;
+                }
+
+                gl_FragColor = vec4(final_color / total_weight, 1.0);
+            }
+        `;
+
+        // --- WebGL初期化 ---
+        function initWebGL() {
+            if (!gl) {
+                console.error("WebGL not supported!");
+                return;
+            }
+
+            voronoiProgram = createProgram(vertShader, voronoiFragShader);
+            blurProgram = createProgram(vertShader, blurFragShader);
+
+            const quadVertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+            quadBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW);
+            
+            resizeCanvas();
+            
             for (let i = 0; i < numParticles; i++) {
                 particles.push(new Particle());
             }
-            
-            noStroke(); // WEBGLモードではstrokeを無効化
-        }
 
+            requestAnimationFrame(draw);
+        }
+        
+        // --- 描画ループ ---
         function draw() {
-            // 1. パーティクルの物理演算を更新
-            for (let particle of particles) {
-                particle.update();
-            }
+            updateParticles();
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
+            gl.useProgram(voronoiProgram);
+            setupShaderAttributes(voronoiProgram);
+            setVoronoiUniforms();
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2);
+            gl.useProgram(blurProgram);
+            setupShaderAttributes(blurProgram);
+            setBlurUniforms(fboTexture1, [1, 0]);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.useProgram(blurProgram);
+            setupShaderAttributes(blurProgram);
+            setBlurUniforms(fboTexture2, [0, 1]);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(draw);
+        }
+        
+        function updateParticles() {
+            for (let particle of particles) particle.update();
             for (let i = 0; i < particles.length; i++) {
                 for (let j = i + 1; j < particles.length; j++) {
                     particles[i].checkCollision(particles[j]);
                 }
                 particles[i].edges();
             }
+        }
 
-            // 2. シェーダーを適用
-            shader(voronoiShader);
-
-            // 3. シェーダーにデータを送る
+        function setVoronoiUniforms() {
             let positions = [];
             let colors = [];
             for (const p of particles) {
                 positions.push(p.pos.x, p.pos.y);
-                let c = color(p.color);
-                colors.push(red(c) / 255.0, green(c) / 255.0, blue(c) / 255.0);
+                const c = hexToRgb(p.color);
+                colors.push(c.r / 255, c.g / 255, c.b / 255);
             }
-            
-            voronoiShader.setUniform('u_resolution', [width, height]);
-            voronoiShader.setUniform('u_num_points', particles.length);
-            voronoiShader.setUniform('u_points', positions);
-            voronoiShader.setUniform('u_colors', colors);
-
-            // 4. 画面全体を覆う四角形を描画してシェーダーを実行
-            rect(-width / 2, -height / 2, width, height);
-            
-            // 5. 描画結果全体にガウスぼかしを適用
-            // この値が大きいほど、ぼかしが強くなります
-            filter(BLUR, 30);
+            gl.uniform2f(gl.getUniformLocation(voronoiProgram, 'u_resolution'), canvas.width, canvas.height);
+            gl.uniform1i(gl.getUniformLocation(voronoiProgram, 'u_num_points'), particles.length);
+            gl.uniform2fv(gl.getUniformLocation(voronoiProgram, 'u_points'), positions);
+            gl.uniform3fv(gl.getUniformLocation(voronoiProgram, 'u_colors'), colors);
+        }
+        
+        function setBlurUniforms(texture, direction) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.uniform1i(gl.getUniformLocation(blurProgram, 'u_texture'), 0);
+            gl.uniform2f(gl.getUniformLocation(blurProgram, 'u_resolution'), canvas.width, canvas.height);
+            gl.uniform2fv(gl.getUniformLocation(blurProgram, 'u_direction'), direction);
         }
 
-        // --- Particle クラス ---
+        // --- ヘルパー関数 ---
+        function createShader(source, type) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+        function createProgram(vsSource, fsSource) {
+            const program = gl.createProgram();
+            const vs = createShader(vsSource, gl.VERTEX_SHADER);
+            const fs = createShader(fsSource, gl.FRAGMENT_SHADER);
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program link error:', gl.getProgramInfoLog(program));
+                return null;
+            }
+            return program;
+        }
+        
+        function setupShaderAttributes(program) {
+            const posAttrib = gl.getAttribLocation(program, 'a_position');
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.enableVertexAttribArray(posAttrib);
+            gl.vertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0);
+        }
+        
+        function createFramebuffer(width, height) {
+            const fbo = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+            const texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            return { fbo, texture };
+        }
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            const fb1 = createFramebuffer(canvas.width, canvas.height);
+            fbo1 = fb1.fbo;
+            fboTexture1 = fb1.texture;
+            
+            const fb2 = createFramebuffer(canvas.width, canvas.height);
+            fbo2 = fb2.fbo;
+            fboTexture2 = fb2.texture;
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        const mapValue = (value, start1, stop1, start2, stop2) => {
+            return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+        };
+        
+        window.addEventListener('resize', () => {
+             resizeCanvas();
+             for (let p of particles) {
+                p.pos.x = Math.random() * canvas.width;
+                p.pos.y = Math.random() * canvas.height;
+            }
+        });
+
+        // --- Particle クラス (p5.js非依存) ---
         class Particle {
-            constructor() {
-                this.reset();
-            }
-
+            constructor() { this.reset(); }
             reset() {
-                this.pos = createVector(random(width), random(height));
-                this.vel = p5.Vector.random2D().mult(random(0.5, 2.5));
-                this.size = random(40, 80);
+                this.pos = { x: Math.random() * canvas.width, y: Math.random() * canvas.height };
+                const angle = Math.random() * 2 * Math.PI;
+                const initialSpeed = Math.random() * 2 + 0.5;
+                this.vel = { x: Math.cos(angle) * initialSpeed, y: Math.sin(angle) * initialSpeed };
+                this.size = Math.random() * 40 + 40;
                 this.mass = this.size * 0.5;
-                this.color = random(colorPalette);
+                this.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
             }
-
             update() {
-                this.pos.add(this.vel);
-            }
+                // 中心からの距離に基づいて速度を調整
+                const maxSpeed = 4.0;
+                const minSpeed = 0.5;
+                const center = { x: canvas.width / 2, y: canvas.height / 2 };
+                const distFromCenter = Math.sqrt(Math.pow(this.pos.x - center.x, 2) + Math.pow(this.pos.y - center.y, 2));
+                const maxDist = Math.sqrt(Math.pow(center.x, 2) + Math.pow(center.y, 2));
+                
+                const targetSpeed = mapValue(distFromCenter, 0, maxDist, maxSpeed, minSpeed);
 
+                const currentSpeed = Math.sqrt(this.vel.x * this.vel.x + this.vel.y * this.vel.y);
+                if (currentSpeed > 0) {
+                    this.vel.x = (this.vel.x / currentSpeed) * targetSpeed;
+                    this.vel.y = (this.vel.y / currentSpeed) * targetSpeed;
+                }
+                
+                this.pos.x += this.vel.x;
+                this.pos.y += this.vel.y;
+            }
             checkCollision(other) {
-                let distanceVect = p5.Vector.sub(other.pos, this.pos);
-                let distance = distanceVect.mag();
-                let minDistance = this.size / 2 + other.size / 2;
+                const dx = other.pos.x - this.pos.x;
+                const dy = other.pos.y - this.pos.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const min_dist = this.size / 2 + other.size / 2;
 
-                if (distance < minDistance) {
-                    let distanceCorrection = (minDistance - distance) / 2.0;
-                    let d = distanceVect.copy();
-                    let correctionVector = d.normalize().mult(distanceCorrection);
-                    other.pos.add(correctionVector);
-                    this.pos.sub(correctionVector);
+                if (dist < min_dist) {
+                    const angle = Math.atan2(dy, dx);
+                    const overlap = (min_dist - dist) / 2;
+                    this.pos.x -= Math.cos(angle) * overlap;
+                    this.pos.y -= Math.sin(angle) * overlap;
+                    other.pos.x += Math.cos(angle) * overlap;
+                    other.pos.y += Math.sin(angle) * overlap;
 
-                    let v1 = this.vel;
-                    let v2 = other.vel;
-                    let m1 = this.mass;
-                    let m2 = other.mass;
+                    const v1 = this.vel;
+                    const v2 = other.vel;
+                    const m1 = this.mass;
+                    const m2 = other.mass;
+                    
+                    const newVelX1 = (v1.x * (m1 - m2) + (2 * m2 * v2.x)) / (m1 + m2);
+                    const newVelY1 = (v1.y * (m1 - m2) + (2 * m2 * v2.y)) / (m1 + m2);
+                    const newVelX2 = (v2.x * (m2 - m1) + (2 * m1 * v1.x)) / (m1 + m2);
+                    const newVelY2 = (v2.y * (m2 - m1) + (2 * m1 * v1.y)) / (m1 + m2);
 
-                    let newVelX1 = (v1.x * (m1 - m2) + (2 * m2 * v2.x)) / (m1 + m2);
-                    let newVelY1 = (v1.y * (m1 - m2) + (2 * m2 * v2.y)) / (m1 + m2);
-                    let newVelX2 = (v2.x * (m2 - m1) + (2 * m1 * v1.x)) / (m1 + m2);
-                    let newVelY2 = (v2.y * (m2 - m1) + (2 * m1 * v1.y)) / (m1 + m2);
-
-                    this.vel.x = newVelX1;
-                    this.vel.y = newVelY1;
-                    other.vel.x = newVelX2;
-                    other.vel.y = newVelY2;
+                    this.vel = {x: newVelX1, y: newVelY1};
+                    other.vel = {x: newVelX2, y: newVelY2};
                 }
             }
-
             edges() {
-                if (this.pos.x < 0 || this.pos.x > width) {
-                    this.vel.x *= -1;
-                }
-                if (this.pos.y < 0 || this.pos.y > height) {
-                    this.vel.y *= -1;
-                }
+                if (this.pos.x < 0 || this.pos.x > canvas.width) this.vel.x *= -1;
+                if (this.pos.y < 0 || this.pos.y > canvas.height) this.vel.y *= -1;
             }
         }
 
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-            for (let particle of particles) {
-                // ウィンドウリサイズ時にパーティクルの位置を再設定
-                particle.pos.x = random(width);
-                particle.pos.y = random(height);
-            }
-        }
-
-        // --- テーマ切り替え & Gemini API ---
+        // --- UI & 色相シフト ---
         document.addEventListener('DOMContentLoaded', () => {
+            initWebGL();
+            
             const generateButton = document.getElementById('generate-button');
             const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -305,77 +460,64 @@
             applyTheme(colorSchemeQuery.matches);
             colorSchemeQuery.addEventListener('change', e => applyTheme(e.matches));
 
-            generateButton.addEventListener('click', async () => {
-                const originalButtonText = "次は何色かな？";
-                generateButton.textContent = '生成中...';
-                generateButton.disabled = true;
-
-                try {
-                    const prompt = "美しい流体アニメーションに合う、調和のとれたパステルカラーの配色を12色、16進数カラーコードのJSON配列形式で生成してください。例: [\"#RRGGBB\", \"#RRGGBB\"]";
-                    const newPaletteText = await callGemini(prompt);
-                    const newPalette = JSON.parse(newPaletteText);
-                    
-                    if (Array.isArray(newPalette) && newPalette.length > 0) {
-                        colorPalette = newPalette;
-                        // 色が変更されたら、各パーティクルの色も更新
-                        for(let p of particles) {
-                            p.color = random(colorPalette);
-                        }
-                    } else {
-                        throw new Error("Invalid palette format");
-                    }
-
-                } catch (error) {
-                    console.error('Error generating palette:', error);
-                } finally {
-                    generateButton.disabled = false;
-                    generateButton.textContent = originalButtonText;
+            generateButton.addEventListener('click', () => {
+                colorPalette = colorPalette.map(hex => {
+                    let rgb = hexToRgb(hex);
+                    let hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+                    hsl.h = (hsl.h + 1/3) % 1; // 色相を1/3 (120度) シフト
+                    let newRgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+                    return rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+                });
+                for(let p of particles) {
+                    p.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
                 }
             });
         });
-
-        // Gemini APIを呼び出す関数
-        async function callGemini(prompt, retries = 3, delay = 1000) {
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        description: "12色の16進数カラーコードのリスト。",
-                        items: {
-                            type: "STRING",
-                            pattern: "^#[0-9a-fA-F]{6}$"
-                        }
-                    }
+        
+        // --- 色変換ヘルパー関数 ---
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max == min) {
+                h = s = 0; // achromatic
+            } else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
                 }
-            };
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-                    const result = await response.json();
-                    
-                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                        return result.candidates[0].content.parts[0].text.trim();
-                    } else {
-                        throw new Error('Invalid response structure from API');
-                    }
-                } catch (error) {
-                    console.error(`Attempt ${i + 1} failed:`, error);
-                    if (i === retries - 1) throw error;
-                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                }
+                h /= 6;
             }
+            return { h, s, l };
+        }
+
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s == 0) {
+                r = g = b = l; // achromatic
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                let p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+        }
+        
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
         }
     </script>
 </body>
