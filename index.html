@@ -143,6 +143,13 @@
         </div>
     </div>
     <script>
+        // --- ★★★ デバッグ用設定 ★★★ ---
+        // 'FULL'   : フル解像度（高負荷・最高画質）
+        // 'HALF'   : 1/4解像度（推奨・最適化版）
+        // 'QUARTER': 1/16解像度（超軽量・低画質）
+        const BLUR_MODE = 'QUARTER';
+        // ------------------------------------
+
         // --- グローバル変数 ---
         const canvas = document.getElementById('webgl-canvas');
         const gl = canvas.getContext('webgl');
@@ -151,26 +158,30 @@
         
         let voronoiProgram, blurProgram;
         let quadBuffer;
-        let fbo1, fbo2, fboTexture1, fboTexture2;
+        let fboFull1, fboFull2, fboTextureFull1, fboTextureFull2;
+        let fboHalf1, fboHalf2, fboTextureHalf1, fboTextureHalf2;
+        let fboQuarter1, fboQuarter2, fboTextureQuarter1, fboTextureQuarter2;
+        let spatialGrid;
 
-        // 初期カラーパレット
         let colorPalette = [
             '#E0FBFC', '#C2DFE3', '#AEECEF', '#86BBD8',
             '#97C1A9', '#C6E2E9', '#F4F1DE', '#E8DAB2',
             '#BDE4A8', '#A2D5AB', '#87C38F', '#6B9D7F'
         ];
         
-        // テキストグラデーションの初期色 (HSL形式で保持)
         let textGradientColors = [
-            { h: 225/360, s: 0.73, l: 0.57 }, // RoyalBlue
-            { h: 271/360, s: 0.76, l: 0.53 }  // BlueViolet
+            { h: 225/360, s: 0.73, l: 0.57 },
+            { h: 271/360, s: 0.76, l: 0.53 }
         ];
-
 
         // --- シェーダーコード ---
         const vertShader = `
             attribute vec2 a_position;
+            varying vec2 v_texcoord;
             void main() {
+                // テクスチャ座標をフラグメントシェーダーに渡す
+                // (0, 0)が左下、(1, 1)が右上になるように変換
+                v_texcoord = a_position * 0.5 + 0.5;
                 gl_Position = vec4(a_position, 0.0, 1.0);
             }
         `;
@@ -202,24 +213,26 @@
         const blurFragShader = `
             precision mediump float;
             uniform sampler2D u_texture;
-            uniform vec2 u_resolution;
+            uniform vec2 u_resolution; // ★ ソーステクスチャの解像度
             uniform vec2 u_direction;
-            
+            varying vec2 v_texcoord; // ★ 頂点シェーダーから受け取るテクスチャ座標
+
             float gaussian(float x, float sigma) {
                 return exp(-(x * x) / (2.0 * sigma * sigma));
             }
 
             void main() {
-                vec2 uv = gl_FragCoord.xy / u_resolution;
                 vec3 final_color = vec3(0.0);
                 float total_weight = 0.0;
-                float sigma = 40.0; // ぼかしの強度をさらに強化
+                float sigma = 20.0;
 
-                // ループの範囲を定数に変更
-                for (float i = -50.0; i <= 50.0; i++) {
+                // エラー修正：ループの範囲を定数に変更
+                for (float i = -25.0; i <= 25.0; i++) {
                     float weight = gaussian(i, sigma);
+                    // オフセットはソーステクスチャの解像度に基づいて計算
                     vec2 offset = u_direction * i / u_resolution;
-                    final_color += texture2D(u_texture, uv + offset).rgb * weight;
+                    // gl_FragCoordではなくv_texcoordを基準にサンプリング
+                    final_color += texture2D(u_texture, v_texcoord + offset).rgb * weight;
                     total_weight += weight;
                 }
 
@@ -242,6 +255,8 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW);
             
+            spatialGrid = new SpatialGrid(canvas.width, canvas.height, 100);
+            
             resizeCanvas();
             
             for (let i = 0; i < numParticles; i++) {
@@ -255,56 +270,103 @@
         function draw() {
             updateParticles();
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
+            switch(BLUR_MODE) {
+                case 'FULL':
+                    drawFullRes();
+                    break;
+                case 'QUARTER':
+                    drawScaledRes(0.25, fboQuarter1, fboQuarter2, fboTextureQuarter1, fboTextureQuarter2);
+                    break;
+                case 'HALF':
+                default:
+                    drawScaledRes(0.5, fboHalf1, fboHalf2, fboTextureHalf1, fboTextureHalf2);
+                    break;
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        // フル解像度描画
+        function drawFullRes() {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fboFull1);
+            gl.viewport(0, 0, canvas.width, canvas.height);
             gl.useProgram(voronoiProgram);
             setupShaderAttributes(voronoiProgram);
-            setVoronoiUniforms();
+            setVoronoiUniforms(1.0);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fboFull2);
             gl.useProgram(blurProgram);
             setupShaderAttributes(blurProgram);
-            setBlurUniforms(fboTexture1, [1, 0]);
+            setBlurUniforms(fboTextureFull1, [1, 0], canvas.width, canvas.height);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.useProgram(blurProgram);
             setupShaderAttributes(blurProgram);
-            setBlurUniforms(fboTexture2, [0, 1]);
+            setBlurUniforms(fboTextureFull2, [0, 1], canvas.width, canvas.height);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+
+        // スケール指定描画
+        function drawScaledRes(scale, fboA, fboB, texA, texB) {
+            const scaledWidth = Math.floor(canvas.width * scale);
+            const scaledHeight = Math.floor(canvas.height * scale);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
+            gl.viewport(0, 0, scaledWidth, scaledHeight);
+            gl.useProgram(voronoiProgram);
+            setupShaderAttributes(voronoiProgram);
+            setVoronoiUniforms(scale);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-            requestAnimationFrame(draw);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fboB);
+            gl.useProgram(blurProgram);
+            setupShaderAttributes(blurProgram);
+            setBlurUniforms(texA, [1, 0], scaledWidth, scaledHeight);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.useProgram(blurProgram);
+            setupShaderAttributes(blurProgram);
+            setBlurUniforms(texB, [0, 1], scaledWidth, scaledHeight);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
         
         function updateParticles() {
-            for (let particle of particles) particle.update();
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    particles[i].checkCollision(particles[j]);
+            spatialGrid.clear();
+            for (let p of particles) spatialGrid.insert(p);
+            
+            for (let p of particles) {
+                p.update();
+                const neighbors = spatialGrid.query(p);
+                for (let other of neighbors) {
+                    if (p !== other) p.checkCollision(other);
                 }
-                particles[i].edges();
+                p.edges();
             }
         }
 
-        function setVoronoiUniforms() {
+        function setVoronoiUniforms(scale) {
             let positions = [];
             let colors = [];
             for (const p of particles) {
-                positions.push(p.pos.x, p.pos.y);
+                positions.push(p.pos.x * scale, p.pos.y * scale);
                 const c = hexToRgb(p.color);
                 colors.push(c.r / 255, c.g / 255, c.b / 255);
             }
-            gl.uniform2f(gl.getUniformLocation(voronoiProgram, 'u_resolution'), canvas.width, canvas.height);
+            gl.uniform2f(gl.getUniformLocation(voronoiProgram, 'u_resolution'), canvas.width * scale, canvas.height * scale);
             gl.uniform1i(gl.getUniformLocation(voronoiProgram, 'u_num_points'), particles.length);
             gl.uniform2fv(gl.getUniformLocation(voronoiProgram, 'u_points'), positions);
             gl.uniform3fv(gl.getUniformLocation(voronoiProgram, 'u_colors'), colors);
         }
         
-        function setBlurUniforms(texture, direction) {
+        function setBlurUniforms(texture, direction, srcWidth, srcHeight) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.uniform1i(gl.getUniformLocation(blurProgram, 'u_texture'), 0);
-            gl.uniform2f(gl.getUniformLocation(blurProgram, 'u_resolution'), canvas.width, canvas.height);
+            gl.uniform2f(gl.getUniformLocation(blurProgram, 'u_resolution'), srcWidth, srcHeight);
             gl.uniform2fv(gl.getUniformLocation(blurProgram, 'u_direction'), direction);
         }
 
@@ -344,16 +406,13 @@
         function createFramebuffer(width, height) {
             const fbo = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             return { fbo, texture };
@@ -362,15 +421,27 @@
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
             
-            const fb1 = createFramebuffer(canvas.width, canvas.height);
-            fbo1 = fb1.fbo;
-            fboTexture1 = fb1.texture;
+            const fullW = canvas.width, fullH = canvas.height;
+            const halfW = Math.floor(fullW/2), halfH = Math.floor(fullH/2);
+            const quarterW = Math.floor(fullW/4), quarterH = Math.floor(fullH/4);
+
+            let fb = createFramebuffer(fullW, fullH);
+            fboFull1 = fb.fbo; fboTextureFull1 = fb.texture;
+            fb = createFramebuffer(fullW, fullH);
+            fboFull2 = fb.fbo; fboTextureFull2 = fb.texture;
+
+            fb = createFramebuffer(halfW, halfH);
+            fboHalf1 = fb.fbo; fboTextureHalf1 = fb.texture;
+            fb = createFramebuffer(halfW, halfH);
+            fboHalf2 = fb.fbo; fboTextureHalf2 = fb.texture;
+
+            fb = createFramebuffer(quarterW, quarterH);
+            fboQuarter1 = fb.fbo; fboTextureQuarter1 = fb.texture;
+            fb = createFramebuffer(quarterW, quarterH);
+            fboQuarter2 = fb.fbo; fboTextureQuarter2 = fb.texture;
             
-            const fb2 = createFramebuffer(canvas.width, canvas.height);
-            fbo2 = fb2.fbo;
-            fboTexture2 = fb2.texture;
+            spatialGrid = new SpatialGrid(canvas.width, canvas.height, 100);
         }
         
         function hexToRgb(hex) {
@@ -394,7 +465,6 @@
             }
         });
 
-        // --- Particle クラス (p5.js非依存) ---
         class Particle {
             constructor() { this.reset(); }
             reset() {
@@ -407,21 +477,16 @@
                 this.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
             }
             update() {
-                // 中心からの距離に基づいて速度を調整
-                const maxSpeed = 4.0;
-                const minSpeed = 0.5;
+                const maxSpeed = 4.0, minSpeed = 0.5;
                 const center = { x: canvas.width / 2, y: canvas.height / 2 };
                 const distFromCenter = Math.sqrt(Math.pow(this.pos.x - center.x, 2) + Math.pow(this.pos.y - center.y, 2));
                 const maxDist = Math.sqrt(Math.pow(center.x, 2) + Math.pow(center.y, 2));
-                
                 const targetSpeed = mapValue(distFromCenter, 0, maxDist, maxSpeed, minSpeed);
-
                 const currentSpeed = Math.sqrt(this.vel.x * this.vel.x + this.vel.y * this.vel.y);
                 if (currentSpeed > 0) {
                     this.vel.x = (this.vel.x / currentSpeed) * targetSpeed;
                     this.vel.y = (this.vel.y / currentSpeed) * targetSpeed;
                 }
-                
                 this.pos.x += this.vel.x;
                 this.pos.y += this.vel.y;
             }
@@ -439,16 +504,12 @@
                     other.pos.x += Math.cos(angle) * overlap;
                     other.pos.y += Math.sin(angle) * overlap;
 
-                    const v1 = this.vel;
-                    const v2 = other.vel;
-                    const m1 = this.mass;
-                    const m2 = other.mass;
-                    
+                    const v1 = this.vel, v2 = other.vel;
+                    const m1 = this.mass, m2 = other.mass;
                     const newVelX1 = (v1.x * (m1 - m2) + (2 * m2 * v2.x)) / (m1 + m2);
                     const newVelY1 = (v1.y * (m1 - m2) + (2 * m2 * v2.y)) / (m1 + m2);
                     const newVelX2 = (v2.x * (m2 - m1) + (2 * m1 * v1.x)) / (m1 + m2);
                     const newVelY2 = (v2.y * (m2 - m1) + (2 * m1 * v1.y)) / (m1 + m2);
-
                     this.vel = {x: newVelX1, y: newVelY1};
                     other.vel = {x: newVelX2, y: newVelY2};
                 }
@@ -458,56 +519,59 @@
                 if (this.pos.y < 0 || this.pos.y > canvas.height) this.vel.y *= -1;
             }
         }
+        
+        class SpatialGrid {
+            constructor(width, height, cellSize) {
+                this.width = width; this.height = height; this.cellSize = cellSize;
+                this.cols = Math.ceil(width / cellSize); this.rows = Math.ceil(height / cellSize);
+                this.grid = new Array(this.cols * this.rows).fill(null).map(() => []);
+            }
+            clear() {
+                for (let i = 0; i < this.grid.length; i++) this.grid[i] = [];
+            }
+            insert(p) {
+                const c = Math.floor(p.pos.x / this.cellSize), r = Math.floor(p.pos.y / this.cellSize);
+                if (c >= 0 && c < this.cols && r >= 0 && r < this.rows) this.grid[c + r * this.cols].push(p);
+            }
+            query(p) {
+                const n = [];
+                const c = Math.floor(p.pos.x / this.cellSize), r = Math.floor(p.pos.y / this.cellSize);
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        const qc = c + i, qr = r + j;
+                        if (qc >= 0 && qc < this.cols && qr >= 0 && qr < this.rows) n.push(...this.grid[qc + qr * this.cols]);
+                    }
+                }
+                return n;
+            }
+        }
 
-        // --- UI & 色相シフト ---
         document.addEventListener('DOMContentLoaded', () => {
             initWebGL();
-            
             const generateButton = document.getElementById('generate-button');
             const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
             const root = document.documentElement;
-
-            const applyTheme = (isDark) => {
-                root.setAttribute('data-theme', isDark ? 'dark' : 'light');
-            };
-
+            const applyTheme = (isDark) => root.setAttribute('data-theme', isDark ? 'dark' : 'light');
             applyTheme(colorSchemeQuery.matches);
             colorSchemeQuery.addEventListener('change', e => applyTheme(e.matches));
-
             generateButton.addEventListener('click', () => {
-                // 背景のカラーパレットをシフト
                 colorPalette = colorPalette.map(hex => {
-                    let rgb = hexToRgb(hex);
-                    let hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-                    hsl.h = (hsl.h + 1/3) % 1; // 色相を1/3 (120度) シフト
-                    let newRgb = hslToRgb(hsl.h, hsl.s, hsl.l);
-                    return rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+                    let hsl = rgbToHsl(...Object.values(hexToRgb(hex)));
+                    hsl.h = (hsl.h + 1/3) % 1;
+                    return hslToHex(hsl.h, hsl.s, hsl.l);
                 });
-                for(let p of particles) {
-                    p.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                }
-                
-                // テキストのグラデーションカラーをシフト
-                textGradientColors.forEach(color => {
-                    color.h = (color.h + 1/3) % 1;
-                });
-                
-                // CSS変数を更新してテキストの色を変更
-                const newHex1 = hslToHex(textGradientColors[0].h, textGradientColors[0].s, textGradientColors[0].l);
-                const newHex2 = hslToHex(textGradientColors[1].h, textGradientColors[1].s, textGradientColors[1].l);
-                root.style.setProperty('--gradient-color-1', newHex1);
-                root.style.setProperty('--gradient-color-2', newHex2);
+                for(let p of particles) p.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                textGradientColors.forEach(c => c.h = (c.h + 1/3) % 1);
+                root.style.setProperty('--gradient-color-1', hslToHex(textGradientColors[0].h, textGradientColors[0].s, textGradientColors[0].l));
+                root.style.setProperty('--gradient-color-2', hslToHex(textGradientColors[1].h, textGradientColors[1].s, textGradientColors[1].l));
             });
         });
         
-        // --- 色変換ヘルパー関数 ---
         function rgbToHsl(r, g, b) {
             r /= 255; g /= 255; b /= 255;
             let max = Math.max(r, g, b), min = Math.min(r, g, b);
             let h, s, l = (max + min) / 2;
-            if (max == min) {
-                h = s = 0; // achromatic
-            } else {
+            if (max == min) { h = s = 0; } else {
                 let d = max - min;
                 s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
                 switch (max) {
@@ -522,12 +586,9 @@
 
         function hslToRgb(h, s, l) {
             let r, g, b;
-            if (s == 0) {
-                r = g = b = l; // achromatic
-            } else {
+            if (s == 0) { r = g = b = l; } else {
                 const hue2rgb = (p, q, t) => {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
+                    if (t < 0) t += 1; if (t > 1) t -= 1;
                     if (t < 1/6) return p + (q - p) * 6 * t;
                     if (t < 1/2) return q;
                     if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
@@ -535,9 +596,7 @@
                 };
                 let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
                 let p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1/3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
+                r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
             }
             return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
         }
