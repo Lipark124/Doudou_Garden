@@ -122,8 +122,7 @@
         // --- グローバル変数 ---
         let particles = [];
         const numParticles = 50;
-        let p5_bgColor;
-        let voronoiBuffer; // ボロノイ図を描画するためのオフスクリーンバッファ
+        let voronoiShader;
 
         // 初期カラーパレット
         let colorPalette = [
@@ -132,29 +131,67 @@
             '#BDE4A8', '#A2D5AB', '#87C38F', '#6B9D7F'
         ];
 
+        // --- シェーダーコード ---
+        // 頂点シェーダー (Vertex Shader): 画面全体を覆うための基本的なシェーダー
+        const vertShader = `
+            attribute vec3 aPosition;
+            attribute vec2 aTexCoord;
+            varying vec2 vTexCoord;
+            void main() {
+                vTexCoord = aTexCoord;
+                vec4 positionVec4 = vec4(aPosition, 1.0);
+                positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+                gl_Position = positionVec4;
+            }
+        `;
+
+        // フラグメントシェーダー (Fragment Shader): 各ピクセルの色を計算する
+        const fragShader = `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform int u_num_points;
+            uniform vec2 u_points[${numParticles}];
+            uniform vec3 u_colors[${numParticles}];
+
+            void main() {
+                vec2 st = gl_FragCoord.xy;
+                
+                float min_dist = 1.0e10; // 最も近い点への距離
+                vec3 final_color = vec3(0.0); // 最も近い点の色
+
+                // 最も近い点とその色を見つける
+                for (int i = 0; i < ${numParticles}; i++) {
+                    if (i >= u_num_points) break;
+                    
+                    float d = distance(st, u_points[i]);
+                    if (d < min_dist) {
+                        min_dist = d;
+                        final_color = u_colors[i];
+                    }
+                }
+                
+                gl_FragColor = vec4(final_color, 1.0);
+            }
+        `;
+
         // --- p5.js スケッチ ---
         function setup() {
-            let canvas = createCanvas(windowWidth, windowHeight);
+            // レンダラーをWEBGLに変更
+            let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
             canvas.parent('canvas-container');
             
-            // ボロノイ図用のグラフィックバッファを作成
-            voronoiBuffer = createGraphics(windowWidth, windowHeight);
-
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            p5_bgColor = isDarkMode ? color(0) : color(255);
+            // シェーダーをコンパイル
+            voronoiShader = createShader(vertShader, fragShader);
 
             for (let i = 0; i < numParticles; i++) {
                 particles.push(new Particle());
             }
+            
+            noStroke(); // WEBGLモードではstrokeを無効化
         }
 
         function draw() {
-            // エラー防止: キャンバスやバッファのサイズが0の場合は描画処理をスキップ
-            if (width <= 0 || height <= 0 || !voronoiBuffer || voronoiBuffer.width <= 0 || voronoiBuffer.height <= 0) {
-                return;
-            }
-
-            // 1. 全てのパーティクル（見えないコア）の物理演算を更新
+            // 1. パーティクルの物理演算を更新
             for (let particle of particles) {
                 particle.update();
             }
@@ -165,40 +202,29 @@
                 particles[i].edges();
             }
 
-            // 2. パーティクルの位置に基づいてボロノイ図をバッファに描画
-            updateVoronoiBuffer();
+            // 2. シェーダーを適用
+            shader(voronoiShader);
 
-            // 3. 完成したバッファをメインキャンバスに表示
-            image(voronoiBuffer, 0, 0);
-        }
-
-        function updateVoronoiBuffer() {
-            // パフォーマンス向上のため、低解像度で計算
-            const step = 10; 
-            voronoiBuffer.noStroke();
-
-            // 各ピクセル（ステップごと）に最も近いパーティクルの色を割り当てる
-            for (let y = 0; y < voronoiBuffer.height; y += step) {
-                for (let x = 0; x < voronoiBuffer.width; x += step) {
-                    let closestDist = Infinity;
-                    let closestParticle = null;
-
-                    for (const particle of particles) {
-                        const d = dist(x, y, particle.pos.x, particle.pos.y);
-                        if (d < closestDist) {
-                            closestDist = d;
-                            closestParticle = particle;
-                        }
-                    }
-
-                    if (closestParticle) {
-                        voronoiBuffer.fill(closestParticle.color);
-                        voronoiBuffer.rect(x, y, step, step);
-                    }
-                }
+            // 3. シェーダーにデータを送る
+            let positions = [];
+            let colors = [];
+            for (const p of particles) {
+                positions.push(p.pos.x, p.pos.y);
+                let c = color(p.color);
+                colors.push(red(c) / 255.0, green(c) / 255.0, blue(c) / 255.0);
             }
-            // 計算結果に強力なぼかしをかけて境界線を滑らかにする
-            voronoiBuffer.filter(BLUR, 20);
+            
+            voronoiShader.setUniform('u_resolution', [width, height]);
+            voronoiShader.setUniform('u_num_points', particles.length);
+            voronoiShader.setUniform('u_points', positions);
+            voronoiShader.setUniform('u_colors', colors);
+
+            // 4. 画面全体を覆う四角形を描画してシェーダーを実行
+            rect(-width / 2, -height / 2, width, height);
+            
+            // 5. 描画結果全体にガウスぼかしを適用
+            // この値が大きいほど、ぼかしが強くなります
+            filter(BLUR, 15);
         }
 
         // --- Particle クラス ---
@@ -213,14 +239,10 @@
                 this.size = random(40, 80);
                 this.mass = this.size * 0.5;
                 this.color = random(colorPalette);
-                this.birthTime = millis();
             }
 
             update() {
                 this.pos.add(this.vel);
-                if (millis() - this.birthTime > 30000) {
-                    this.reset();
-                }
             }
 
             checkCollision(other) {
@@ -253,10 +275,10 @@
             }
 
             edges() {
-                if (this.pos.x < this.size / 2 || this.pos.x > width - this.size / 2) {
+                if (this.pos.x < 0 || this.pos.x > width) {
                     this.vel.x *= -1;
                 }
-                if (this.pos.y < this.size / 2 || this.pos.y > height - this.size / 2) {
+                if (this.pos.y < 0 || this.pos.y > height) {
                     this.vel.y *= -1;
                 }
             }
@@ -264,11 +286,10 @@
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
-            if (windowWidth > 0 && windowHeight > 0) {
-                voronoiBuffer.resizeCanvas(windowWidth, windowHeight);
-            }
             for (let particle of particles) {
-                particle.reset();
+                // ウィンドウリサイズ時にパーティクルの位置を再設定
+                particle.pos.x = random(width);
+                particle.pos.y = random(height);
             }
         }
 
@@ -279,9 +300,6 @@
 
             const applyTheme = (isDark) => {
                 document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-                if (typeof p5_bgColor !== 'undefined') {
-                    p5_bgColor = isDark ? color(0) : color(255);
-                }
             };
 
             applyTheme(colorSchemeQuery.matches);
@@ -299,6 +317,10 @@
                     
                     if (Array.isArray(newPalette) && newPalette.length > 0) {
                         colorPalette = newPalette;
+                        // 色が変更されたら、各パーティクルの色も更新
+                        for(let p of particles) {
+                            p.color = random(colorPalette);
+                        }
                     } else {
                         throw new Error("Invalid palette format");
                     }
