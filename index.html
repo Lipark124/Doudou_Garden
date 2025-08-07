@@ -174,9 +174,8 @@
         #generate-button {
             background-color: var(--button-bg-color);
             border: 2px solid var(--button-border-color);
-            /* ボタンの文字色はテーマの背景色と逆にする */
             color: var(--bg-color); 
-            -webkit-text-fill-color: initial; /* グラデーションを継承しないように */
+            -webkit-text-fill-color: initial;
             padding: 15px 30px;
             font-family: 'M PLUS Rounded 1c', sans-serif;
             font-size: 18px;
@@ -216,14 +215,6 @@
         </div>
     </div>
     <script>
-        // --- ★★★ パフォーマンス設定 ★★★ ---
-        // 'FULL'   : フル解像度（高負荷）
-        // 'HALF'   : 1/4解像度（推奨）
-        // 'QUARTER': 1/16解像度
-        // 'EIGHTH' : 1/64解像度（超軽量）
-        const BLUR_MODE = 'EIGHTH'; 
-        // ------------------------------------
-
         // --- グローバル変数 ---
         const canvas = document.getElementById('webgl-canvas');
         const gl = canvas.getContext('webgl');
@@ -232,7 +223,8 @@
         
         let voronoiProgram, blurProgram;
         let quadBuffer;
-        let fbo = {}; // フレームバッファオブジェクトをまとめて管理
+        let fbo1, fbo2, fboTexture1, fboTexture2;
+        let blurScale;
         let spatialGrid;
 
         let colorPalette = [
@@ -336,53 +328,34 @@
         // --- 描画ループ ---
         function draw() {
             updateParticles();
-
-            let scale, fboA, fboB, texA, texB;
-
-            switch(BLUR_MODE) {
-                case 'FULL':
-                    scale = 1.0; fboA = fbo.full1; fboB = fbo.full2; texA = fbo.texFull1; texB = fbo.texFull2;
-                    break;
-                case 'QUARTER':
-                    scale = 0.25; fboA = fbo.quarter1; fboB = fbo.quarter2; texA = fbo.texQuarter1; texB = fbo.texQuarter2;
-                    break;
-                case 'EIGHTH':
-                    scale = 0.125; fboA = fbo.eighth1; fboB = fbo.eighth2; texA = fbo.texEighth1; texB = fbo.texEighth2;
-                    break;
-                case 'HALF':
-                default:
-                    scale = 0.5; fboA = fbo.half1; fboB = fbo.half2; texA = fbo.texHalf1; texB = fbo.texHalf2;
-                    break;
-            }
-            drawScaledRes(scale, fboA, fboB, texA, texB);
             
-            requestAnimationFrame(draw);
-        }
+            const scaledWidth = Math.floor(canvas.width * blurScale);
+            const scaledHeight = Math.floor(canvas.height * blurScale);
 
-        // スケール指定描画
-        function drawScaledRes(scale, fboA, fboB, texA, texB) {
-            const scaledWidth = Math.floor(canvas.width * scale);
-            const scaledHeight = Math.floor(canvas.height * scale);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
+            // 1. ボロノイ図を低解像度FBO1に描画
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
             gl.viewport(0, 0, scaledWidth, scaledHeight);
             gl.useProgram(voronoiProgram);
             setupShaderAttributes(voronoiProgram);
-            setVoronoiUniforms(scale);
+            setVoronoiUniforms(blurScale);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fboB);
+            // 2. 水平ぼかしを低解像度FBO2に描画
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2);
             gl.useProgram(blurProgram);
             setupShaderAttributes(blurProgram);
-            setBlurUniforms(texA, [1, 0], scaledWidth, scaledHeight);
+            setBlurUniforms(fboTexture1, [1, 0], scaledWidth, scaledHeight);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+            // 3. 垂直ぼかしを画面に描画 (フル解像度に戻す)
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, canvas.width, canvas.height);
             gl.useProgram(blurProgram);
             setupShaderAttributes(blurProgram);
-            setBlurUniforms(texB, [0, 1], scaledWidth, scaledHeight);
+            setBlurUniforms(fboTexture2, [0, 1], scaledWidth, scaledHeight);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            
+            requestAnimationFrame(draw);
         }
         
         function updateParticles() {
@@ -473,23 +446,16 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            const fullW = canvas.width, fullH = canvas.height;
-            const halfW = Math.floor(fullW/2), halfH = Math.floor(fullH/2);
-            const quarterW = Math.floor(fullW/4), quarterH = Math.floor(fullH/4);
-            const eighthW = Math.floor(fullW/8), eighthH = Math.floor(fullH/8);
-
-            let fb;
-            fb = createFramebuffer(fullW, fullH); fbo.full1 = fb.fbo; fbo.texFull1 = fb.texture;
-            fb = createFramebuffer(fullW, fullH); fbo.full2 = fb.fbo; fbo.texFull2 = fb.texture;
-
-            fb = createFramebuffer(halfW, halfH); fbo.half1 = fb.fbo; fbo.texHalf1 = fb.texture;
-            fb = createFramebuffer(halfW, halfH); fbo.half2 = fb.fbo; fbo.texHalf2 = fb.texture;
-
-            fb = createFramebuffer(quarterW, quarterH); fbo.quarter1 = fb.fbo; fbo.texQuarter1 = fb.texture;
-            fb = createFramebuffer(quarterW, quarterH); fbo.quarter2 = fb.fbo; fbo.texQuarter2 = fb.texture;
+            // デバイスの画面幅に応じてぼかし解像度を決定
+            blurScale = (window.innerWidth < 1024) ? 1/16 : 1/8;
             
-            fb = createFramebuffer(eighthW, eighthH); fbo.eighth1 = fb.fbo; fbo.texEighth1 = fb.texture;
-            fb = createFramebuffer(eighthW, eighthH); fbo.eighth2 = fb.fbo; fbo.texEighth2 = fb.texture;
+            const scaledW = Math.floor(canvas.width * blurScale);
+            const scaledH = Math.floor(canvas.height * blurScale);
+
+            let fb = createFramebuffer(scaledW, scaledH);
+            fbo1 = fb.fbo; fboTexture1 = fb.texture;
+            fb = createFramebuffer(scaledW, scaledH);
+            fbo2 = fb.fbo; fboTexture2 = fb.texture;
             
             spatialGrid = new SpatialGrid(canvas.width, canvas.height, 100);
         }
