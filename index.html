@@ -16,6 +16,9 @@
             --button-bg-color: rgba(0, 0, 0, 0.05);
             --button-border-color: rgba(0, 0, 0, 0.2);
             --button-hover-bg-color: rgba(0, 0, 0, 0.1);
+            /* テキストのグラデーションとグロウの色をCSS変数で管理 */
+            --gradient-color-1: #4169E1;
+            --gradient-color-2: #8A2BE2;
         }
 
         [data-theme="dark"] {
@@ -64,19 +67,17 @@
             padding: 0 20px;
             
             /* グラデーションテキストの設定 */
-            background: linear-gradient(0deg, #8A2BE2, #4169E1, #8A2BE2);
+            background: linear-gradient(0deg, var(--gradient-color-2), var(--gradient-color-1), var(--gradient-color-2));
             background-size: 100% 200%;
             color: transparent;
             -webkit-background-clip: text;
             background-clip: text;
             
-            /* アウターグロウをtext-shadowで表現 */
-            text-shadow:
-                0 0 7px rgba(255, 255, 255, 0.8),
-                0 0 15px rgba(65, 105, 225, 0.6), /* 明るい青の光 */
-                0 0 25px rgba(65, 105, 225, 0.4),
-                0 0 45px rgba(138, 43, 226, 0.3), /* 暗い紫の光 */
-                0 0 70px rgba(138, 43, 226, 0.2);
+            /* 白いアウターグロウに変更 */
+            filter: 
+                drop-shadow(0 0 5px rgba(255, 255, 255, 0.9)) 
+                drop-shadow(0 0 15px rgba(255, 255, 255, 0.6))
+                drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
             
             /* グラデーションアニメーション */
             animation: gradient-scroll 5s ease-in-out infinite;
@@ -118,11 +119,16 @@
             opacity: 0.5;
         }
 
-        @media (max-width: 768px) {
-            #text-overlay { font-size: 80px; }
+        @media (max-width: 1024px) { /* タブレット対応 */
+            #text-overlay { font-size: 100px; }
             #generate-button { font-size: 16px; padding: 12px 24px; }
         }
-        @media (max-width: 480px) {
+        
+        @media (max-width: 768px) { /* スマートフォン（横向き）など */
+            #text-overlay { font-size: 80px; }
+        }
+
+        @media (max-width: 480px) { /* スマートフォン（縦向き） */
             #text-overlay { font-size: 48px; }
             #generate-button { font-size: 14px; padding: 10px 20px; }
         }
@@ -153,6 +159,13 @@
             '#97C1A9', '#C6E2E9', '#F4F1DE', '#E8DAB2',
             '#BDE4A8', '#A2D5AB', '#87C38F', '#6B9D7F'
         ];
+        
+        // テキストグラデーションの初期色 (HSL形式で保持)
+        let textGradientColors = [
+            { h: 225/360, s: 0.73, l: 0.57 }, // RoyalBlue
+            { h: 271/360, s: 0.76, l: 0.53 }  // BlueViolet
+        ];
+
 
         // --- シェーダーコード ---
         const vertShader = `
@@ -452,15 +465,17 @@
             
             const generateButton = document.getElementById('generate-button');
             const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const root = document.documentElement;
 
             const applyTheme = (isDark) => {
-                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                root.setAttribute('data-theme', isDark ? 'dark' : 'light');
             };
 
             applyTheme(colorSchemeQuery.matches);
             colorSchemeQuery.addEventListener('change', e => applyTheme(e.matches));
 
             generateButton.addEventListener('click', () => {
+                // 背景のカラーパレットをシフト
                 colorPalette = colorPalette.map(hex => {
                     let rgb = hexToRgb(hex);
                     let hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -471,6 +486,17 @@
                 for(let p of particles) {
                     p.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
                 }
+                
+                // テキストのグラデーションカラーをシフト
+                textGradientColors.forEach(color => {
+                    color.h = (color.h + 1/3) % 1;
+                });
+                
+                // CSS変数を更新してテキストの色を変更
+                const newHex1 = hslToHex(textGradientColors[0].h, textGradientColors[0].s, textGradientColors[0].l);
+                const newHex2 = hslToHex(textGradientColors[1].h, textGradientColors[1].s, textGradientColors[1].l);
+                root.style.setProperty('--gradient-color-1', newHex1);
+                root.style.setProperty('--gradient-color-2', newHex2);
             });
         });
         
@@ -518,6 +544,11 @@
         
         function rgbToHex(r, g, b) {
             return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+        
+        function hslToHex(h, s, l) {
+            const rgb = hslToRgb(h, s, l);
+            return rgbToHex(rgb.r, rgb.g, rgb.b);
         }
     </script>
 </body>
