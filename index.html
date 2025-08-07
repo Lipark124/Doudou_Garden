@@ -121,8 +121,9 @@
     <script>
         // --- グローバル変数 ---
         let particles = [];
-        const numParticles = 50; // 玉の数を調整
-        let p5_bgColor; // p5.js用の背景色オブジェクト
+        const numParticles = 50;
+        let p5_bgColor;
+        let voronoiBuffer; // ボロノイ図を描画するためのオフスクリーンバッファ
 
         // 初期カラーパレット
         let colorPalette = [
@@ -136,35 +137,68 @@
             let canvas = createCanvas(windowWidth, windowHeight);
             canvas.parent('canvas-container');
             
+            // ボロノイ図用のグラフィックバッファを作成
+            voronoiBuffer = createGraphics(windowWidth, windowHeight);
+
             const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            p5_bgColor = isDarkMode ? color(0, 0, 0) : color(255, 255, 255);
+            p5_bgColor = isDarkMode ? color(0) : color(255);
 
             for (let i = 0; i < numParticles; i++) {
                 particles.push(new Particle());
             }
-            background(p5_bgColor);
         }
 
         function draw() {
-            background(red(p5_bgColor), green(p5_bgColor), blue(p5_bgColor), 25);
+            // エラー防止: キャンバスやバッファのサイズが0の場合は描画処理をスキップ
+            if (width <= 0 || height <= 0 || !voronoiBuffer || voronoiBuffer.width <= 0 || voronoiBuffer.height <= 0) {
+                return;
+            }
 
-            // 各パーティクルの状態を更新
+            // 1. 全てのパーティクル（見えないコア）の物理演算を更新
             for (let particle of particles) {
                 particle.update();
             }
-
-            // 衝突判定と処理
             for (let i = 0; i < particles.length; i++) {
                 for (let j = i + 1; j < particles.length; j++) {
                     particles[i].checkCollision(particles[j]);
                 }
+                particles[i].edges();
             }
-            
-            // 画面端の処理と描画
-            for (let particle of particles) {
-                particle.edges();
-                particle.show();
+
+            // 2. パーティクルの位置に基づいてボロノイ図をバッファに描画
+            updateVoronoiBuffer();
+
+            // 3. 完成したバッファをメインキャンバスに表示
+            image(voronoiBuffer, 0, 0);
+        }
+
+        function updateVoronoiBuffer() {
+            // パフォーマンス向上のため、低解像度で計算
+            const step = 10; 
+            voronoiBuffer.noStroke();
+
+            // 各ピクセル（ステップごと）に最も近いパーティクルの色を割り当てる
+            for (let y = 0; y < voronoiBuffer.height; y += step) {
+                for (let x = 0; x < voronoiBuffer.width; x += step) {
+                    let closestDist = Infinity;
+                    let closestParticle = null;
+
+                    for (const particle of particles) {
+                        const d = dist(x, y, particle.pos.x, particle.pos.y);
+                        if (d < closestDist) {
+                            closestDist = d;
+                            closestParticle = particle;
+                        }
+                    }
+
+                    if (closestParticle) {
+                        voronoiBuffer.fill(closestParticle.color);
+                        voronoiBuffer.rect(x, y, step, step);
+                    }
+                }
             }
+            // 計算結果に強力なぼかしをかけて境界線を滑らかにする
+            voronoiBuffer.filter(BLUR, 20);
         }
 
         // --- Particle クラス ---
@@ -175,32 +209,15 @@
 
             reset() {
                 this.pos = createVector(random(width), random(height));
-                this.vel = createVector(0, 0);
-                this.speed = random(0.5, 2.5);
-                this.angle = random(TWO_PI);
-                this.angleIncrement = random(-0.02, 0.02);
-                this.sinCoeff = random(-2, 2);
-                this.cosCoeff = random(-2, 2);
-                this.lastCoeffChange = millis();
-                this.prevPos = this.pos.copy();
+                this.vel = p5.Vector.random2D().mult(random(0.5, 2.5));
+                this.size = random(40, 80);
+                this.mass = this.size * 0.5;
                 this.color = random(colorPalette);
-                this.size = random(40, 80); // 大きさの範囲を変更
-                this.mass = this.size * 0.5; // 質量を設定
                 this.birthTime = millis();
             }
 
             update() {
-                if (millis() - this.lastCoeffChange > 1000) {
-                    this.sinCoeff = random(-2, 2);
-                    this.cosCoeff = random(-2, 2);
-                    this.lastCoeffChange = millis();
-                }
-                
-                this.angle += this.angleIncrement;
-                this.vel.x = cos(this.angle) * this.cosCoeff * this.speed;
-                this.vel.y = sin(this.angle) * this.sinCoeff * this.speed;
                 this.pos.add(this.vel);
-
                 if (millis() - this.birthTime > 30000) {
                     this.reset();
                 }
@@ -212,14 +229,12 @@
                 let minDistance = this.size / 2 + other.size / 2;
 
                 if (distance < minDistance) {
-                    // 衝突応答
                     let distanceCorrection = (minDistance - distance) / 2.0;
                     let d = distanceVect.copy();
                     let correctionVector = d.normalize().mult(distanceCorrection);
                     other.pos.add(correctionVector);
                     this.pos.sub(correctionVector);
 
-                    // 運動量保存則に基づいた速度の交換
                     let v1 = this.vel;
                     let v2 = other.vel;
                     let m1 = this.mass;
@@ -237,16 +252,6 @@
                 }
             }
 
-            show() {
-                let c = color(this.color);
-                drawingContext.shadowBlur = this.size * 0.75;
-                drawingContext.shadowColor = c;
-                noStroke(); // 線を消して円にする
-                fill(c);
-                ellipse(this.pos.x, this.pos.y, this.size);
-                drawingContext.shadowBlur = 0;
-            }
-
             edges() {
                 if (this.pos.x < this.size / 2 || this.pos.x > width - this.size / 2) {
                     this.vel.x *= -1;
@@ -259,7 +264,9 @@
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
-            background(p5_bgColor);
+            if (windowWidth > 0 && windowHeight > 0) {
+                voronoiBuffer.resizeCanvas(windowWidth, windowHeight);
+            }
             for (let particle of particles) {
                 particle.reset();
             }
@@ -273,7 +280,7 @@
             const applyTheme = (isDark) => {
                 document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
                 if (typeof p5_bgColor !== 'undefined') {
-                    p5_bgColor = isDark ? color(0, 0, 0) : color(255, 255, 255);
+                    p5_bgColor = isDark ? color(0) : color(255);
                 }
             };
 
@@ -310,7 +317,6 @@
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             
-            // generationConfigを追加してJSON出力を強制
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
