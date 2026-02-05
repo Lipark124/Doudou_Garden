@@ -1,0 +1,400 @@
+/* ========================================
+   DreamDoudou - Retro 2010s Style
+   レトロな書斎テーマ
+======================================== */
+
+/* ---------- Color Variables ---------- */
+:root {
+    --bg-main: #4a3c31;
+    --bg-dark: #2d2418;
+    --bg-panel: #5c4a3d;
+
+    --parchment: #f0e6d3;
+    --parchment-dark: #d4c4a8;
+    --parchment-border: #a89070;
+
+    --wood: #6b4c35;
+    --wood-dark: #4a3728;
+    --wood-light: #8b6b4a;
+
+    --text-dark: #2d2418;
+    --text-light: #f0e6d8;
+
+    --link-color: #8b5a2b;
+    --link-hover: #cd853f;
+
+    --border-color: #3d3028;
+}
+
+/* ---------- Reset ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ---------- Body ---------- */
+body {
+    background-color: var(--bg-main);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233d3028' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text-light);
+    min-height: 100vh;
+}
+
+/* ---------- Plant Decorations ---------- */
+.plant-decor {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.plant-decor img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.plant-left {
+    left: 0;
+}
+
+.plant-right {
+    right: 0;
+}
+
+/* Fallback gradient if image not found */
+.plant-decor img[src=""]~*,
+.plant-decor img:not([src])~* {
+    display: none;
+}
+
+.plant-left {
+    background: linear-gradient(90deg,
+            rgba(58, 90, 58, 0.8) 0%,
+            rgba(90, 138, 74, 0.5) 50%,
+            transparent 100%);
+}
+
+.plant-right {
+    background: linear-gradient(-90deg,
+            rgba(58, 90, 58, 0.8) 0%,
+            rgba(90, 138, 74, 0.5) 50%,
+            transparent 100%);
+}
+
+/* ---------- Main Table Layout ---------- */
+.main-layout {
+    width: 100%;
+    max-width: 950px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: var(--bg-panel);
+    border: 4px solid var(--border-color);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Title Banner ---------- */
+.title-banner {
+    background: linear-gradient(180deg, var(--wood-dark) 0%, var(--wood) 50%, var(--wood-dark) 100%);
+    padding: 15px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--border-color);
+}
+
+.title-banner .logo {
+    width: 60px;
+    height: auto;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+
+.title-banner h1 {
+    display: inline;
+    font-family: 'Times New Roman', serif;
+    font-size: 2rem;
+    color: var(--parchment);
+    text-shadow: 2px 2px 0 var(--bg-dark);
+    letter-spacing: 2px;
+    vertical-align: middle;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    width: 140px;
+    background: var(--wood-dark);
+    border: 2px solid var(--border-color);
+    padding: 0;
+}
+
+.sidebar-box {
+    padding: 10px;
+}
+
+.sidebar h2 {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.1rem;
+    color: var(--parchment);
+    text-align: center;
+    padding: 8px;
+    margin-bottom: 10px;
+    background: var(--wood);
+    border: 2px inset var(--wood-light);
+}
+
+/* ---------- Navigation Tabs ---------- */
+.nav-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--parchment-dark);
+    border: 2px outset var(--parchment);
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.1s;
+}
+
+.tab:hover {
+    background: var(--parchment);
+    border-style: inset;
+}
+
+.tab:active {
+    border-style: inset;
+    padding-left: 12px;
+    padding-top: 12px;
+}
+
+.tab img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.tab span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Larger tabs for Socials */
+.tab-large {
+    padding: 12px;
+}
+
+.tab-large img {
+    width: 32px;
+    height: 32px;
+}
+
+.tab-large span {
+    font-size: 0.9rem;
+}
+
+/* ---------- Content Area ---------- */
+.content-area {
+    background: var(--bg-panel);
+    padding: 15px;
+    border-left: 2px solid var(--border-color);
+    border-right: 2px solid var(--border-color);
+}
+
+/* ---------- Parchment Box ---------- */
+.parchment {
+    background: var(--parchment);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+    color: var(--text-dark);
+    padding: 20px;
+    border: 3px ridge var(--parchment-border);
+    box-shadow: inset 0 0 30px rgba(139, 107, 74, 0.2);
+}
+
+.parchment h2 {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.5rem;
+    text-align: center;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--parchment-border);
+}
+
+.parchment h3 {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--wood-dark);
+}
+
+/* ---------- Profile Section ---------- */
+.profile-section {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.profile-frame {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    background: var(--parchment-dark);
+    border: 3px ridge var(--parchment-border);
+    padding: 5px;
+}
+
+.profile-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ---------- Text Sections ---------- */
+.text-section {
+    margin-bottom: 15px;
+}
+
+.text-section p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.divider {
+    border: none;
+    border-top: 1px dashed var(--parchment-border);
+    margin: 15px 0;
+}
+
+/* ---------- Interest List ---------- */
+.interest-list {
+    list-style: none;
+    padding: 0;
+}
+
+.interest-list li {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--parchment-border);
+    border-left: 4px solid var(--wood);
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.interest-list li:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+    background: var(--wood-dark);
+    padding: 15px;
+    text-align: center;
+    border-top: 4px solid var(--border-color);
+}
+
+.footer p {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--parchment-dark);
+    margin-bottom: 10px;
+}
+
+.footer img {
+    max-width: 80px;
+    opacity: 0.8;
+}
+
+.footer img:hover {
+    opacity: 1;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .plant-decor {
+        width: 50px;
+    }
+
+    .main-layout {
+        display: block;
+        width: 100%;
+    }
+
+    .main-layout tbody,
+    .main-layout tr,
+    .main-layout td {
+        display: block;
+        width: 100%;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .sidebar-left {
+        order: 2;
+    }
+
+    .sidebar-right {
+        order: 3;
+    }
+
+    .content-area {
+        order: 1;
+        border: none;
+    }
+
+    .nav-tabs {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .tab {
+        flex: 0 0 auto;
+        padding: 8px 12px;
+    }
+
+    .title-banner h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ---------- Links ---------- */
+a {
+    color: var(--link-color);
+}
+
+a:hover {
+    color: var(--link-hover);
+}
+
+/* ---------- Scrollbar (Retro) ---------- */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--wood-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--wood);
+    border: 2px solid var(--wood-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--wood-light);
+}

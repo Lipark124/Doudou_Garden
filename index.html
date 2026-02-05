@@ -4,72 +4,172 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Preparing...</title>
+    <title>DreamDoudou - Lipark's Study</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <div class="title">
-        <h1 class="Logo">
-            <img src="logo.png" alt="logo.png" draggable="false" />
-        </h1>
-
-        <div class="content">
-            <div class="titlebar">
-                <h1>DreamDoudou</h1>
-            </div>
-
-            <h1>About me</h1>
-            <div class="about-me">
-                <p>Hiya! Welcome to my study! I'm Lipark. My friends told me I'm like a fairy, and that's why my fursona
-                    is a fairy.</p>
-            </div>
-            <div>
-                <span>Jobs</span>
-                <p>Right now, I'm a uni student diving into IT and Neuroscience.</p>
-            </div>
-            <span>Interests</span>
-            <ul>
-                <li>Tinkering</li>
-                <p>I love messing around with hardware and software. Whether it's building AI Agents on a Raspberry Pi
-                    or just hanging out... I’m often roaming Akihabara's electric town with my friends!</p>
-                <li>History</li>
-                <p>I enjoy reading up on regional history and diving into historical theories. I actually used to be a
-                    modder for historical simulation games! I love cultural history, too—my dream is to travel and
-                    experience cultures all over the world firsthand.</p>
-                <li>VR</li>
-                <p>I hang out in VRChat a lot; I love taking photos there! Once I get my hands on full-body tracking, my
-                    dream is to stream Beat Saber.</p>
-                <li>Art</li>
-                <p>I often doodle for fun. I started drawing because of my friends, but lately, I’ve been getting really
-                    into it! It’s not just sketching—I really enjoy brainstorming logos and designs, too.</p>
-                <li>Avali</li>
-                <p>That unique look created by those four ears, the adorable whispers from their throats, that tiny,
-                    cute existence you'd never expect from those predator eyes... I just loooooove them!</p>
-                <li>Music</li>
-                <p>I often listen to Hardcore Techno. I also love listening to Psytrance, EDM, Orchestra. I often go to
-                    DJ event held in VRChat.</p>
-            </ul>
-
-            <div class="Social Links">
-                <h1>Social Links</h1>
-                <a href="https://lipark.neocities.org/ball/test.html">test1</a>
-                <a href="https://lipark.neocities.org/ball/test.html">test2</a>
-                <a href="https://lipark.neocities.org/ball/test.html">test3</a>
-            </div>
-
-            <div class="Gallery">
-                <h1>Gallery</h1>
-
-            </div>
-
-            <div class="frame">
-                <div class="img-frame">
-                    <img src="/neocities.png" alt="Neocities logo" draggable="false" />
-                </div>
-            </div>
-        </div>
+    <!-- Left Plant Decoration -->
+    <div class="plant-decor plant-left">
+        <img src="resource/plants-left.png" alt="" draggable="false" />
     </div>
+
+    <!-- Right Plant Decoration -->
+    <div class="plant-decor plant-right">
+        <img src="resource/plants-right.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Main Table Layout (Retro Style) -->
+    <table class="main-layout" cellpadding="0" cellspacing="0">
+        <tbody>
+            <!-- Title Banner Row -->
+            <tr>
+                <td colspan="3">
+                    <div class="title-banner">
+                        <img src="resource/doudou.png" alt="DreamDoudou" class="logo" draggable="false" />
+                        <h1>Dream Doudou</h1>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Main Content Row -->
+            <tr>
+                <!-- LEFT: Navigate -->
+                <td class="sidebar sidebar-left" valign="top">
+                    <div class="sidebar-box">
+                        <h2>Navigate</h2>
+                        <nav class="nav-tabs">
+                            <a href="gallery/index.html" class="tab">
+                                <img src="resource/icons/gallery.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Gallery</span>
+                            </a>
+                            <a href="lore/index.html" class="tab">
+                                <img src="resource/icons/lore.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Lore</span>
+                            </a>
+                            <a href="cardboardbox/index.html" class="tab">
+                                <img src="resource/icons/experiment.png" alt=""
+                                    onerror="this.src='resource/doudou.png'" />
+                                <span>Experiment</span>
+                            </a>
+                            <a href="vrchatpics/index.html" class="tab">
+                                <img src="resource/icons/vrchat.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>VRChat Pics</span>
+                            </a>
+                        </nav>
+                    </div>
+                </td>
+
+                <!-- CENTER: About Me -->
+                <td class="content-area" valign="top">
+                    <div class="parchment">
+                        <h2>About Me</h2>
+
+                        <div class="profile-section">
+                            <div class="profile-frame">
+                                <img src="resource/doudou.png" alt="Profile" draggable="false" />
+                            </div>
+                        </div>
+
+                        <div class="text-section">
+                            <p>Hiya! Welcome to my study! I'm <strong>Lipark</strong>. My friends told me I'm like a
+                                fairy, and that's why my fursona is a fairy.</p>
+                        </div>
+
+                        <hr class="divider" />
+
+                        <div class="text-section">
+                            <h3>Jobs</h3>
+                            <p>Right now, I'm a uni student diving into IT and Neuroscience.</p>
+                        </div>
+
+                        <hr class="divider" />
+
+                        <div class="text-section">
+                            <h3>Interests</h3>
+                            <ul class="interest-list">
+                                <li>
+                                    <strong>🔧 Tinkering</strong><br />
+                                    I love messing around with hardware and software. Whether it's building AI Agents on
+                                    a Raspberry Pi or just hanging out... I'm often roaming Akihabara's electric town
+                                    with my friends!
+                                </li>
+                                <li>
+                                    <strong>📜 History</strong><br />
+                                    I enjoy reading up on regional history and diving into historical theories. I
+                                    actually used to be a modder for historical simulation games!
+                                </li>
+                                <li>
+                                    <strong>🥽 VR</strong><br />
+                                    I hang out in VRChat a lot; I love taking photos there! Once I get my hands on
+                                    full-body tracking, my dream is to stream Beat Saber.
+                                </li>
+                                <li>
+                                    <strong>🎨 Art</strong><br />
+                                    I often doodle for fun. I started drawing because of my friends, but lately, I've
+                                    been getting really into it!
+                                </li>
+                                <li>
+                                    <strong>🐦 Avali</strong><br />
+                                    That unique look created by those four ears, the adorable whispers from their
+                                    throats... I just loooooove them!
+                                </li>
+                                <li>
+                                    <strong>🎵 Music</strong><br />
+                                    I often listen to Hardcore Techno, Psytrance, EDM, and Orchestra. I often go to DJ
+                                    events held in VRChat.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- RIGHT: Socials -->
+                <td class="sidebar sidebar-right" valign="top">
+                    <div class="sidebar-box">
+                        <h2>Socials</h2>
+                        <nav class="nav-tabs">
+                            <a href="#" class="tab tab-large">
+                                <img src="resource/icons/steam.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Steam</span>
+                            </a>
+                            <a href="#" class="tab tab-large">
+                                <img src="resource/icons/twitter.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Twitter</span>
+                            </a>
+                            <a href="#" class="tab tab-large">
+                                <img src="resource/icons/bluesky.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Bluesky</span>
+                            </a>
+                            <a href="#" class="tab tab-large">
+                                <img src="resource/icons/discord.png" alt="" onerror="this.src='resource/doudou.png'" />
+                                <span>Discord</span>
+                            </a>
+                            <a href="#" class="tab tab-large">
+                                <img src="resource/icons/telegram.png" alt=""
+                                    onerror="this.src='resource/doudou.png'" />
+                                <span>Telegram</span>
+                            </a>
+                        </nav>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Footer Row -->
+            <tr>
+                <td colspan="3">
+                    <div class="footer">
+                        <p>~ handled with care since 2026 ~</p>
+                        <a href="https://neocities.org">
+                            <img src="resource/neocities.png" alt="Hosted on Neocities"
+                                onerror="this.style.display='none'" />
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
     <script src="script.js"></script>
 </body>
 
