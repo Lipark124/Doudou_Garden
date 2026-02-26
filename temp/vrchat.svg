@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="100%" height="100%" shape-rendering="crispEdges">
+  <!-- Strap Outline -->
+  <rect x="1" y="4" width="14" height="4" fill="#3D3028"/>
+  <!-- Strap -->
+  <rect x="2" y="5" width="12" height="2" fill="#424242"/>
+  <!-- Headset Outline -->
+  <rect x="2" y="4" width="12" height="8" fill="#3D3028"/>
+  <!-- Headset Body -->
+  <rect x="3" y="5" width="10" height="6" fill="#E0E0E0"/>
+  <!-- Front Visor -->
+  <rect x="4" y="6" width="8" height="4" fill="#212121"/>
+  <!-- Glowing Eyes / Cameras -->
+  <rect x="5" y="7" width="2" height="2" fill="#00E5FF"/>
+  <rect x="9" y="7" width="2" height="2" fill="#00E5FF"/>
+</svg>
