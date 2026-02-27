@@ -64,16 +64,15 @@ body {
     /* body already has bg_wall, so this div is not needed */
 }
 
-/* ---- Plant Decorations (fixed) ---- */
+/* ---- Plant Decorations (scrolls with page, hidden on narrow screens) ---- */
 .plant-decor {
-    position: fixed;
+    position: absolute;
     top: 0;
     pointer-events: none;
     z-index: 200;
 }
 
 .plant-decor img {
-    width: 100%;
     height: auto;
     object-fit: contain;
     image-rendering: pixelated;
@@ -83,13 +82,20 @@ body {
 .plant-left {
     left: 0;
     width: 15vw;
-    min-width: 80px;
+    max-width: 160px;
 }
 
 .plant-right {
     right: 0;
     width: 5vw;
-    min-width: 30px;
+    max-width: 80px;
+}
+
+/* Hide plants on narrower windows */
+@media (max-width: 1050px) {
+    .plant-decor {
+        display: none;
+    }
 }
 
 /* ---- Board Scene Container ---- */
@@ -229,6 +235,28 @@ body {
 .panel {
     flex: 1;
     min-width: 0;
+    position: relative;
+    /* pin の基準 */
+}
+
+/* ピン（上部中央に突き刺さって見える） */
+.panel-pin {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    z-index: 20;
+    pointer-events: none;
+    filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* hooks-row は非表示（pinに置き換え済み） */
+.hooks-row {
+    display: none;
 }
 
 /* 揺れアニメーション */
@@ -328,73 +356,83 @@ body {
     gap: 6px;
 }
 
-/* ---- 木板ボタン ---- */
+/* ---- ダークゲーミングUIボタン ---- */
 .wood-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 6px;
-    background: linear-gradient(180deg, #6b4c28 0%, #5a3d20 50%, #4a3218 100%);
-    border: 2px solid var(--border-dark);
-    border-top: 2px solid var(--wood-highlight);
-    border-left: 2px solid var(--wood-highlight);
+    justify-content: space-between;
+    gap: 0;
+    width: 100%;
+    padding: 0;
+    background: linear-gradient(180deg, #1e1a2e 0%, #13101f 100%);
+    border: 2px solid #0a0814;
+    border-bottom: 3px solid #0a0814;
+    border-right: 3px solid #0a0814;
     text-decoration: none;
-    color: var(--text-gold);
+    color: #d8d0f0;
     font-family: 'Silkscreen', 'DotGothic16', monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
+    letter-spacing: 2px;
     cursor: pointer;
-    box-shadow: 3px 3px 0 var(--border-dark);
-    transition: transform 0.08s step-end, box-shadow 0.08s step-end;
+    transition: none;
     image-rendering: pixelated;
     position: relative;
     overflow: hidden;
 }
 
-.wood-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.15);
-    pointer-events: none;
-}
-
 .wood-btn:hover {
-    background: linear-gradient(180deg, #8b6832 0%, #7a5628 50%, #6b4820 100%);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 3px 5px 0 var(--border-dark);
+    background: linear-gradient(180deg, #2e2848 0%, #1e1838 100%);
+    color: #ffffff;
+    border-color: #5040a0;
 }
 
 .wood-btn:active,
 .wood-btn.pressed {
-    transform: translateY(3px) !important;
-    box-shadow: 0 0 0 var(--border-dark) !important;
-    border-top-color: var(--border-dark);
-    border-left-color: var(--border-dark);
-    border-bottom-color: var(--wood-highlight);
-    border-right-color: var(--wood-highlight);
-    background: linear-gradient(180deg, #4a3218 0%, #5a3d20 50%, #6b4c28 100%);
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+    border-right-width: 1px;
 }
 
+/* アイコンエリア (右端)—ダークな冗積層ボックス */
 .wood-btn img {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     flex-shrink: 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px;
+    border-left: 2px solid rgba(0, 0, 0, 0.5);
 }
 
+/* ンテキストエリア (左端) */
 .wood-btn span {
     flex: 1;
+    padding: 10px 10px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    text-shadow: 1px 1px 0 var(--border-dark);
+    text-shadow: 1px 1px 0 #000;
+    text-transform: uppercase;
+}
+
+/* ホバー時の左辺アクセントライン */
+.wood-btn::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #5040a0;
+    opacity: 0;
+    transition: opacity 0s;
+}
+
+.wood-btn:hover::before {
+    opacity: 1;
 }
 
 /* ---- About Me 中央パネル ---- */
