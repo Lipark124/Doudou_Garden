@@ -4,168 +4,179 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Preparing</title>
+    <title>Dream Doudou</title>
     <link rel="icon" href="temp/nano_banana.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- Left Plant Decoration -->
+    <!-- ====== 背景壁 ====== -->
+    <div class="bg-wall"></div>
+
+    <!-- ====== 植物装飾（左右固定） ====== -->
     <div class="plant-decor plant-left">
         <img src="resource/plants-left.png" alt="" draggable="false" />
     </div>
-
-    <!-- Right Plant Decoration -->
     <div class="plant-decor plant-right">
         <img src="resource/plants-right.png" alt="" draggable="false" />
     </div>
 
-    <!-- Main Table Layout (Retro Style) -->
-    <table class="main-layout" cellpadding="0" cellspacing="0">
-        <tbody>
-            <!-- Title Banner Row -->
-            <tr>
-                <td colspan="3">
-                    <div class="title-banner">
-                        <img src="temp/nano_banana.svg" alt="DreamDoudou" class="logo" draggable="false" />
-                        <img src="resource/title.png" alt="Dream Doudou" class="title-img" draggable="false" />
-                        <div class="lang-switch">
-                            <span class="lang-current">🇯🇵 JP</span>
-                            <a href="en/index.html" class="lang-link">🇺🇸 EN</a>
+    <!-- ====== メインシーン ====== -->
+    <div class="board-scene">
+
+        <!-- ① タイトル木板（横幅いっぱい） -->
+        <div class="title-board" id="title-board">
+            <img src="resource/title.png" alt="Dream Doudou" class="title-board-img" draggable="false" />
+            <div class="lang-switch">
+                <span class="lang-current pixel-btn">🇯🇵 JP</span>
+                <a href="en/index.html" class="lang-link pixel-btn">🇺🇸 EN</a>
+            </div>
+        </div>
+
+        <!-- ② 鎖フック行 -->
+        <div class="hooks-row">
+            <img src="resource/hooks.png" alt="" class="hooks-img" draggable="false" />
+        </div>
+
+        <!-- ③ 3列ぶら下がりパネル -->
+        <div class="hanging-panels">
+
+            <!-- 左：ナビゲーション -->
+            <div class="panel panel-nav sway-left">
+                <div class="panel-inner wood-panel">
+                    <h2 class="panel-title pixel-text">Navigate</h2>
+                    <nav class="wood-btn-list">
+                        <a href="gallery/index.html" class="wood-btn" id="btn-gallery">
+                            <img src="resource/icons/gallery.png" alt="" />
+                            <span>Gallery</span>
+                        </a>
+                        <a href="lore/index.html" class="wood-btn" id="btn-lore">
+                            <img src="resource/icons/lore.png" alt="" />
+                            <span>Lore</span>
+                        </a>
+                        <a href="cardboardbox/index.html" class="wood-btn" id="btn-experiment">
+                            <img src="resource/icons/experiment.png" alt="" />
+                            <span>Experiment</span>
+                        </a>
+                        <a href="vrchatpics/index.html" class="wood-btn" id="btn-vrchat">
+                            <img src="resource/icons/vrchat.png" alt="" />
+                            <span>VRChat</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- 中央：About Me -->
+            <div class="panel panel-about sway-center">
+                <div class="about-paper-container">
+                    <img src="resource/about_paper.png" alt="" class="about-paper-bg" draggable="false" />
+                    <div class="about-content">
+                        <h2 class="pixel-text about-title">About Me</h2>
+                        <div class="profile-frame">
+                            <img src="temp/nano_banana.svg" alt="Profile" draggable="false" />
                         </div>
-                    </div>
-                </td>
-            </tr>
-
-            <!-- Main Content Row -->
-            <tr>
-                <!-- LEFT: Navigate -->
-                <td class="sidebar sidebar-left" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Navigate</h2>
-                        <nav class="nav-tabs">
-                            <a href="gallery/index.html" class="tab">
-                                <img src="temp/gallery.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Gallery</span>
-                            </a>
-                            <a href="lore/index.html" class="tab">
-                                <img src="temp/lore.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Lore</span>
-                            </a>
-                            <a href="cardboardbox/index.html" class="tab">
-                                <img src="temp/experiment.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Experiment</span>
-                            </a>
-                            <a href="vrchatpics/index.html" class="tab">
-                                <img src="temp/vrchat.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>VRChat Pics</span>
-                            </a>
-                        </nav>
-                    </div>
-                </td>
-
-                <!-- CENTER: About Me -->
-                <td class="content-area" valign="top">
-                    <div class="parchment">
-                        <h2>About Me</h2>
-
-                        <div class="profile-section">
-                            <div class="profile-frame">
-                                <img src="temp/nano_banana.svg" alt="Profile" draggable="false" />
-                            </div>
-                        </div>
-
-                        <div class="text-section">
+                        <div class="about-text">
                             <p>やぁ！私の書斎へようこそ！<br />
                                 うちの名前は<strong>Lipark</strong>。<br />
-                                友達からは妖精みたいな人と呼ばれたから、うちのファーソナは妖精なんだ。</p>
-                        </div>
-
-                        <hr class="divider" />
-
-                        <div class="text-section">
+                                妖精みたいな人と呼ばれる、ちょっと変わった存在だよ。</p>
+                            <hr class="pixel-divider" />
                             <h3>Jobs</h3>
-                            <p>今は大学でITとNeuroscienceを学んでいるよ。</p>
-                        </div>
-
-                        <hr class="divider" />
-
-                        <div class="text-section">
+                            <p>大学でIT & Neuroscienceを学んでいるよ。</p>
+                            <hr class="pixel-divider" />
                             <h3>Likes</h3>
                             <ul class="interest-list">
-                                <li>
-                                    <strong>🔧 機械弄り</strong><br />
-                                    機械弄りやソフトウェア弄り。RaspberryPiでAIAgent建てたり、、よく友達と秋葉原の電気街に行ったりしているんだ。
-                                </li>
-                                <li>
-                                    <strong>📜 歴史</strong><br />
-                                    各地域の歴史や考察を読んだりするのが好きで、昔は歴史シミュレーションゲームのModderをしてたんだ！文化史も好きで、実際に旅行して世界中の文化に肌で触れることが夢なんだ。
-                                </li>
-                                <li>
-                                    <strong>🥽 VR</strong><br />
-                                    VRChatでよくお出かけしたり、写真を撮るのが好きだよ！フルトラを手に入れたらBeat Saber配信をするのが夢なんだ。
-                                </li>
-                                <li>
-                                    <strong>🎨 Art</strong><br />
-                                    趣味でよく落書きしているんだ。友達の影響で絵を描くようになってから、だんだん楽しくなってきちゃって。単なるお絵描きだけじゃなくて、ロゴやデザインを考えたりすることも好きなんだ。
-                                </li>
-                                <li>
-                                    <strong>🐦 Avali</strong><br />
-                                    4本の耳が作り出すその異風な見た目、喉から囁かれる愛くるしい鳴き声、その捕食者の目には想像できない小さくて可愛い存在、もうだーーーい好き！
-                                </li>
+                                <li><strong>🔧 機械弄り</strong> — RaspberryPiでAI、秋葉原電気街巡り</li>
+                                <li><strong>📜 歴史</strong> — 各地域の歴史・文化・旅行が夢</li>
+                                <li><strong>🥽 VR</strong> — VRChatとBeat Saber配信が目標！</li>
+                                <li><strong>🎨 Art</strong> — 落書き・ロゴデザインが楽しい</li>
+                                <li><strong>🐦 Avali</strong> — だーーーい好き！！！</li>
                             </ul>
                         </div>
                     </div>
-                </td>
+                </div>
+            </div>
 
-                <!-- RIGHT: Socials -->
-                <td class="sidebar sidebar-right" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Socials</h2>
-                        <nav class="nav-tabs">
-                            <a href="#" class="tab tab-large">
-                                <img src="temp/steam.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Steam</span>
-                            </a>
-                            <a href="#" class="tab tab-large">
-                                <img src="temp/twitter.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Twitter</span>
-                            </a>
-                            <a href="#" class="tab tab-large">
-                                <img src="temp/bluesky.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Bluesky</span>
-                            </a>
-                            <a href="#" class="tab tab-large">
-                                <img src="temp/discord.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Discord</span>
-                            </a>
-                            <a href="#" class="tab tab-large">
-                                <img src="temp/telegram.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Telegram</span>
-                            </a>
-                            <a href="https://neocities.org" class="tab tab-large">
-                                <img src="temp/neocities.svg" alt="" onerror="this.src='temp/nano_banana.svg'" />
-                                <span>Neocities</span>
-                            </a>
-                        </nav>
-                    </div>
-                </td>
-            </tr>
-
-            <!-- Footer Row -->
-            <tr>
-                <td colspan="3">
-                    <div class="footer">
-                        <p>~ 2026年から愛を込めて ~</p>
-                        <a href="https://neocities.org">
-                            <img src="resource/neocities.png" alt="Hosted on Neocities"
-                                onerror="this.style.display='none'" />
+            <!-- 右：ソーシャル -->
+            <div class="panel panel-social sway-right">
+                <div class="panel-inner wood-panel">
+                    <h2 class="panel-title pixel-text">Socials</h2>
+                    <nav class="wood-btn-list">
+                        <a href="#" class="wood-btn" id="btn-twitter">
+                            <img src="resource/icons/twitter.png" alt="" />
+                            <span>Twitter</span>
                         </a>
+                        <a href="#" class="wood-btn" id="btn-discord">
+                            <img src="resource/icons/discord.png" alt="" />
+                            <span>Discord</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-bluesky">
+                            <img src="resource/icons/bluesky.png" alt="" />
+                            <span>Bluesky</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-steam">
+                            <img src="resource/icons/steam.png" alt="" />
+                            <span>Steam</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-telegram">
+                            <img src="resource/icons/telegram.png" alt="" />
+                            <span>Telegram</span>
+                        </a>
+                        <a href="https://neocities.org" class="wood-btn" id="btn-neocities">
+                            <img src="resource/icons/neocities.png" alt="" />
+                            <span>Neocities</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- ④ 木棚 -->
+        <div class="shelf-row">
+            <img src="resource/shelf.png" alt="" class="shelf-img" draggable="false" />
+        </div>
+
+        <!-- ⑤ 下段コンテンツ -->
+        <div class="lower-section">
+            <!-- Gallery 巻物 -->
+            <a href="gallery/index.html" class="lower-item scroll-item" id="lower-gallery">
+                <img src="resource/gallery_scroll.png" alt="Gallery" draggable="false" />
+            </a>
+
+            <!-- 右側 下段コンテンツ群 -->
+            <div class="lower-right">
+                <!-- Lore Books -->
+                <a href="lore/index.html" class="lower-item lore-item" id="lower-lore">
+                    <img src="resource/icons/lore.png" alt="Lore" class="lower-icon" draggable="false" />
+                    <div class="lower-text-box">
+                        <span class="lower-badge pixel-text">Avali</span>
+                        <span class="lower-label-book pixel-text">Lore</span>
                     </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </a>
+
+                <!-- Experiment Mystery Box -->
+                <a href="cardboardbox/index.html" class="lower-item exp-item" id="lower-exp">
+                    <img src="resource/icons/experiment.png" alt="Experiment" class="lower-icon" draggable="false" />
+                    <span class="lower-label pixel-text">Experiment</span>
+                    <span class="sparkle" aria-hidden="true">✦</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="footer">
+            <p class="pixel-text">~ 2026年から愛を込めて ~</p>
+            <a href="https://neocities.org">
+                <img src="resource/neocities.png" alt="Hosted on Neocities" onerror="this.style.display='none'" />
+            </a>
+        </div>
+    </div>
+
+    <!-- Easter Egg: バナナ雨コンテナ -->
+    <div id="banana-rain" aria-hidden="true"></div>
 
     <script src="script.js"></script>
 </body>

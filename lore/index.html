@@ -1,11 +1,80 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lore - DreamDoudou</title>
+    <title>Lore - Dream Doudou</title>
+    <meta name="description" content="Lipark の世界観・キャラクター・ロア。うちのこやAIの話など。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../style.css" />
+    <style>
+        /* ===== Lore ページ専用 ===== */
+        .lore-book {
+            background: #1e1208;
+            border: 3px solid #2a1a08;
+            border-top: 3px solid #5a3d20;
+            border-left: 3px solid #5a3d20;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 4px 6px 0 rgba(0,0,0,0.6);
+            position: relative;
+        }
+        .lore-book::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+            background: var(--accent);
+        }
+        .lore-book-title {
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.7rem;
+            color: #f5e0a0;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .lore-tag {
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.5rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 2px 6px;
+            letter-spacing: 1px;
+        }
+        .lore-body {
+            font-family: 'DotGothic16', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        .lore-body a {
+            color: #c8a860;
+            text-decoration-style: dashed;
+        }
+        .lore-divider {
+            border: none;
+            border-top: 2px dashed #3a2810;
+            margin: 10px 0;
+        }
+        .wip-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #3a2a08;
+            border: 2px dashed #8b6032;
+            padding: 10px 16px;
+            margin-bottom: 14px;
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.65rem;
+            color: #c8a860;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,71 +85,144 @@
         <img src="../resource/plants-right.png" alt="" draggable="false" />
     </div>
 
-    <table class="main-layout" cellpadding="0" cellspacing="0">
-        <tbody>
-            <tr>
-                <td colspan="3">
-                    <div class="title-banner">
-                        <a href="../index.html">
-                            <img src="../resource/doudou.png" alt="DreamDoudou" class="logo" draggable="false" />
+    <div class="board-scene">
+        <!-- ① タイトル板 -->
+        <div class="title-board" id="title-board" style="animation-duration:6s;">
+            <img src="../resource/title_board.png" alt="Lore" class="title-board-img" draggable="false" />
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Silkscreen',monospace;font-size:clamp(1rem,3vw,2rem);font-weight:700;color:#f5e0a0;text-shadow:2px 2px 0 #2a1608;letter-spacing:4px;pointer-events:none;">
+                📖 Lore
+            </div>
+            <div class="lang-switch">
+                <span class="lang-current pixel-btn">🇯🇵 JP</span>
+                <a href="#" class="lang-link pixel-btn">🇺🇸 EN</a>
+            </div>
+        </div>
+
+        <!-- ② フック行 -->
+        <div class="hooks-row">
+            <img src="../resource/hooks.png" alt="" class="hooks-img" draggable="false" />
+        </div>
+
+        <!-- ③ ハンギングパネル -->
+        <div class="hanging-panels" style="align-items:flex-start;">
+
+            <!-- 左:ナビ -->
+            <div class="panel panel-nav" style="animation:swayLeft 4s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">NAVIGATE</h3>
+                    <nav class="panel-nav-links">
+                        <a href="../index.html" class="wood-btn">
+                            <img src="../resource/icons/gallery.png" alt="" />
+                            <span>← Home</span>
                         </a>
-                        <h1>Lore</h1>
-                        <div class="lang-switch">
-                            <span class="lang-current">🇯🇵 JP</span>
-                            <a href="../en/lore/index.html" class="lang-link">🇺🇸 EN</a>
+                        <a href="../gallery/index.html" class="wood-btn">
+                            <img src="../resource/icons/gallery.png" alt="" />
+                            <span>Gallery</span>
+                        </a>
+                        <a href="../cardboardbox/index.html" class="wood-btn">
+                            <img src="../resource/icons/experiment.png" alt="" />
+                            <span>Experiment</span>
+                        </a>
+                        <a href="../vrchatpics/index.html" class="wood-btn">
+                            <img src="../resource/icons/vrchat.png" alt="" />
+                            <span>VRChat</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- 中央:Loreメイン -->
+            <div class="panel panel-about" style="flex:2.2;animation:swayCenter 4.5s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">LORE</h3>
+                    <div class="about-paper-container" style="clip-path:none;background:#1a1008;border:3px solid #2a1a08;border-top:3px solid #5a3d20;border-left:3px solid #5a3d20;padding:14px;gap:10px;">
+
+                        <div class="wip-banner">
+                            <span>📚</span>
+                            <span>うちのこや世界観の話。増えたら更新するよ！</span>
                         </div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="sidebar sidebar-left" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Navigate</h2>
-                        <nav class="nav-tabs">
-                            <a href="../index.html" class="tab"><span>← 戻る</span></a>
-                            <a href="../gallery/index.html" class="tab"><span>Gallery</span></a>
-                            <a href="../cardboardbox/index.html" class="tab"><span>Experiment</span></a>
-                            <a href="../vrchatpics/index.html" class="tab"><span>VRChat Pics</span></a>
-                        </nav>
-                    </div>
-                </td>
-                <td class="content-area" valign="top">
-                    <div class="parchment">
-                        <h2>📜 Lore</h2>
-                        <div class="text-section">
-                            <p>物語、世界観、ロアコレクションがここに集まるよ...</p>
+
+                        <!-- Avali のロア -->
+                        <div class="lore-book">
+                            <div class="lore-book-title">
+                                🐦 Avali について
+                                <span class="lore-tag">CHARACTER</span>
+                            </div>
+                            <div class="lore-body">
+                                Avali は小型の羽毛恐竜型の宇宙人の種族。<br />
+                                エコーロケーションと羽毛で感覚を持ち、集団で行動するのが得意。<br />
+                                Lipark はAIが好きな Avali ！　だーーーい好き！！！
+                            </div>
                         </div>
-                        <hr class="divider" />
-                        <div class="text-section">
-                            <h3>🐦 Avali Lore</h3>
-                            <p>準備中！</p>
+
+                        <hr class="lore-divider" />
+
+                        <!-- 自分のロア -->
+                        <div class="lore-book">
+                            <div class="lore-book-title">
+                                ✨ Lipark について
+                                <span class="lore-tag">SELF</span>
+                            </div>
+                            <div class="lore-body">
+                                妖精みたいな人と呼ばれる、ちょっと変わった存在。<br />
+                                IT &amp; Neuroscience を学んでいる大学生。<br />
+                                VRChat と Beat Saber と機械いじりが好き。
+                            </div>
                         </div>
+
+                        <hr class="lore-divider" />
+
+                        <!-- 準備中 -->
+                        <div class="lore-book" style="opacity:0.5;">
+                            <div class="lore-book-title">
+                                ❓ More coming soon...
+                                <span class="lore-tag">WIP</span>
+                            </div>
+                            <div class="lore-body">
+                                世界観の話、もっと書く予定だよ。
+                            </div>
+                        </div>
+
                     </div>
-                </td>
-                <td class="sidebar sidebar-right" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Socials</h2>
-                        <nav class="nav-tabs">
-                            <a href="#" class="tab tab-large"><span>Steam</span></a>
-                            <a href="#" class="tab tab-large"><span>Twitter</span></a>
-                            <a href="#" class="tab tab-large"><span>Bluesky</span></a>
-                            <a href="#" class="tab tab-large"><span>Discord</span></a>
-                            <a href="#" class="tab tab-large"><span>Telegram</span></a>
-                        </nav>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <div class="footer">
-                        <p>~ 2026年から愛を込めて ~</p>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </div>
+            </div>
+
+            <!-- 右:ソーシャル -->
+            <div class="panel panel-social" style="animation:swayRight 5s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">SOCIALS</h3>
+                    <nav class="panel-nav-links">
+                        <a href="#" class="wood-btn" id="btn-twitter">
+                            <img src="../resource/icons/twitter.png" alt="" /><span>Twitter</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-discord">
+                            <img src="../resource/icons/discord.png" alt="" /><span>Discord</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-bluesky">
+                            <img src="../resource/icons/bluesky.png" alt="" /><span>Bluesky</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-steam">
+                            <img src="../resource/icons/steam.png" alt="" /><span>Steam</span>
+                        </a>
+                        <a href="#" class="wood-btn" id="btn-telegram">
+                            <img src="../resource/icons/telegram.png" alt="" /><span>Telegram</span>
+                        </a>
+                        <a href="https://neocities.org" class="wood-btn" id="btn-neocities">
+                            <img src="../resource/icons/neocities.png" alt="" /><span>Neocities</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- ④ 木棚 -->
+        <div class="shelf-row">
+            <img src="../resource/shelf.png" alt="" class="shelf-img" draggable="false" />
+        </div>
+
+        <div class="footer"><p>~ 2026年から愛を込めて ~</p></div>
+    </div>
 
     <script src="../script.js"></script>
 </body>
-
 </html>

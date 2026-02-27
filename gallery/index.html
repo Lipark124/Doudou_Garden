@@ -4,11 +4,238 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gallery - DreamDoudou</title>
+    <title>Gallery - Dream Doudou</title>
+    <meta name="description" content="Lipark のギャラリー。絵やドット絵、創作物を展示しているよ！" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../style.css" />
+    <style>
+        /* ======= ギャラリーページ専用スタイル ======= */
+
+        /* サブページのタイトル板（小さめ） */
+        .sub-title-board {
+            position: relative;
+            width: 70%;
+            margin: 0 auto;
+            cursor: default;
+            animation: titleSwing 5s ease-in-out infinite;
+            transform-origin: center top;
+            user-select: none;
+            line-height: 0;
+        }
+        .sub-title-board-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 5px 0 rgba(0,0,0,0.5));
+        }
+        .sub-title-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Silkscreen', monospace;
+            font-size: clamp(1rem, 3vw, 2rem);
+            font-weight: 700;
+            color: #f5e0a0;
+            text-shadow: 2px 2px 0 #2a1608, -1px -1px 0 #2a1608;
+            letter-spacing: 4px;
+            pointer-events: none;
+        }
+
+        /* 戻るボタン */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-decoration: none;
+            background: #5a3d20;
+            border: 3px solid #3a2010;
+            border-bottom: 5px solid #3a2010;
+            border-right: 4px solid #3a2010;
+            padding: 6px 12px;
+            image-rendering: pixelated;
+            transition: none;
+            user-select: none;
+        }
+        .back-btn:hover {
+            background: #7a5530;
+            color: #f5e0a0;
+        }
+        .back-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+
+        /* ギャラリーパネル（メインパネルのスタイルを継承） */
+        .gallery-main-panel {
+            background: #3a2808;
+            border: 4px solid #2a1a08;
+            border-top: 4px solid #5a3d20;
+            border-left: 4px solid #5a3d20;
+            padding: 16px;
+            box-shadow: 6px 10px 0 rgba(0,0,0,0.7);
+            flex: 1;
+        }
+
+        /* カテゴリタブ */
+        .gallery-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .gallery-tab {
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.6rem;
+            background: #4a3010;
+            color: var(--text-muted);
+            border: 2px solid #2a1a08;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: none;
+            user-select: none;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .gallery-tab:hover,
+        .gallery-tab.active {
+            background: #8b6032;
+            color: #f5e0a0;
+        }
+        .gallery-tab.active {
+            border-bottom-color: #8b6032;
+        }
+
+        /* グリッド */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        /* アート作品カード */
+        .art-card {
+            position: relative;
+            background: #2a1a08;
+            border: 3px solid #1a0e05;
+            border-top: 3px solid #5a3d20;
+            border-left: 3px solid #5a3d20;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.1s step-end;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .art-card:hover {
+            transform: translateY(-4px);
+            border-color: #f5e0a0;
+        }
+        .art-card:active {
+            transform: translateY(2px);
+        }
+        .art-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+            display: block;
+        }
+        .art-card-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 16, 4, 0.85);
+            color: #f5e0a0;
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.55rem;
+            padding: 4px 6px;
+            transform: translateY(100%);
+            transition: transform 0.15s;
+            letter-spacing: 1px;
+        }
+        .art-card:hover .art-card-label {
+            transform: translateY(0);
+        }
+
+        /* 準備中カード */
+        .art-card.placeholder {
+            opacity: 0.4;
+            cursor: default;
+        }
+        .art-card.placeholder:hover {
+            transform: none;
+            border-color: #1a0e05;
+        }
+        .placeholder-icon {
+            font-size: 2.5rem;
+            opacity: 0.5;
+        }
+
+        /* ライトボックス */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .lightbox.open {
+            display: flex;
+        }
+        .lightbox-img {
+            max-width: 90vw;
+            max-height: 90vh;
+            image-rendering: pixelated;
+            border: 4px solid #8b6032;
+            box-shadow: 0 0 0 2px #f5e0a0;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-family: 'Silkscreen', monospace;
+            font-size: 1.2rem;
+            color: #f5e0a0;
+            cursor: pointer;
+            background: #5a3d20;
+            border: 2px solid #8b6032;
+            padding: 4px 10px;
+        }
+        .lightbox-close:hover { background: #8b6032; }
+
+        /* WIP バナー */
+        .wip-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #3a2a08;
+            border: 2px dashed #8b6032;
+            padding: 10px 16px;
+            margin-bottom: 14px;
+            font-family: 'Silkscreen', monospace;
+            font-size: 0.65rem;
+            color: #c8a860;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- 植物デコ -->
     <div class="plant-decor plant-left">
         <img src="../resource/plants-left.png" alt="" draggable="false" />
     </div>
@@ -16,66 +243,169 @@
         <img src="../resource/plants-right.png" alt="" draggable="false" />
     </div>
 
-    <table class="main-layout" cellpadding="0" cellspacing="0">
-        <tbody>
-            <tr>
-                <td colspan="3">
-                    <div class="title-banner">
-                        <a href="../index.html">
-                            <img src="../resource/doudou.png" alt="DreamDoudou" class="logo" draggable="false" />
+    <div class="board-scene">
+
+        <!-- ① タイトル板 -->
+        <div class="title-board sub-title-board" style="width:100%; animation-duration:6s;">
+            <img src="../resource/title_board.png" alt="Gallery" class="title-board-img" draggable="false" />
+            <div class="sub-title-text">🎨 Gallery</div>
+        </div>
+
+        <!-- ② フック行 -->
+        <div class="hooks-row">
+            <img src="../resource/hooks.png" alt="" class="hooks-img" draggable="false" />
+        </div>
+
+        <!-- ③ ハンギングパネル -->
+        <div class="hanging-panels" style="align-items:flex-start;">
+
+            <!-- 左：ナビ -->
+            <div class="panel panel-nav" style="animation: swayLeft 4s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">NAVIGATE</h3>
+                    <nav class="panel-nav-links">
+                        <a href="../index.html" class="wood-btn">
+                            <img src="../resource/icons/gallery.png" alt="" />
+                            <span>← Home</span>
                         </a>
-                        <h1>Gallery</h1>
-                        <div class="lang-switch">
-                            <span class="lang-current">🇯🇵 JP</span>
-                            <a href="../en/gallery/index.html" class="lang-link">🇺🇸 EN</a>
+                        <a href="../lore/index.html" class="wood-btn">
+                            <img src="../resource/icons/lore.png" alt="" />
+                            <span>Lore</span>
+                        </a>
+                        <a href="../cardboardbox/index.html" class="wood-btn">
+                            <img src="../resource/icons/experiment.png" alt="" />
+                            <span>Experiment</span>
+                        </a>
+                        <a href="../vrchatpics/index.html" class="wood-btn">
+                            <img src="../resource/icons/vrchat.png" alt="" />
+                            <span>VRChat</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- 中央：ギャラリーメイン -->
+            <div class="panel panel-about" style="flex:2.2; animation: swayCenter 4.5s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">GALLERY</h3>
+                    <div class="about-paper-container gallery-main-panel" style="background:#2a1a08; clip-path:none; border-radius:0;">
+
+                        <div class="wip-banner">
+                            <span>✏️</span>
+                            <span>絵や作品が増えたらどんどん追加していくよ！クリックで拡大できるよ</span>
                         </div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="sidebar sidebar-left" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Navigate</h2>
-                        <nav class="nav-tabs">
-                            <a href="../index.html" class="tab"><span>← 戻る</span></a>
-                            <a href="../lore/index.html" class="tab"><span>Lore</span></a>
-                            <a href="../cardboardbox/index.html" class="tab"><span>Experiment</span></a>
-                            <a href="../vrchatpics/index.html" class="tab"><span>VRChat Pics</span></a>
-                        </nav>
-                    </div>
-                </td>
-                <td class="content-area" valign="top">
-                    <div class="parchment">
-                        <h2>🎨 Gallery</h2>
-                        <div class="text-section">
-                            <p>準備中... うちの作品はここに展示されるよ！</p>
+
+                        <!-- カテゴリタブ -->
+                        <div class="gallery-tabs">
+                            <span class="gallery-tab active" data-cat="all">All</span>
+                            <span class="gallery-tab" data-cat="art">Artwork</span>
+                            <span class="gallery-tab" data-cat="dot">Pixel Art</span>
+                            <span class="gallery-tab" data-cat="logo">Logo/Design</span>
                         </div>
+
+                        <!-- グリッド -->
+                        <div class="gallery-grid" id="gallery-grid">
+                            <!-- 準備中プレースホルダー -->
+                            <div class="art-card placeholder"><span class="placeholder-icon">🎨</span></div>
+                            <div class="art-card placeholder"><span class="placeholder-icon">🖌️</span></div>
+                            <div class="art-card placeholder"><span class="placeholder-icon">✏️</span></div>
+                            <div class="art-card placeholder"><span class="placeholder-icon">📷</span></div>
+                            <div class="art-card placeholder"><span class="placeholder-icon">🎭</span></div>
+                            <div class="art-card placeholder"><span class="placeholder-icon">🌟</span></div>
+                        </div>
+
                     </div>
-                </td>
-                <td class="sidebar sidebar-right" valign="top">
-                    <div class="sidebar-box">
-                        <h2>Socials</h2>
-                        <nav class="nav-tabs">
-                            <a href="#" class="tab tab-large"><span>Steam</span></a>
-                            <a href="#" class="tab tab-large"><span>Twitter</span></a>
-                            <a href="#" class="tab tab-large"><span>Bluesky</span></a>
-                            <a href="#" class="tab tab-large"><span>Discord</span></a>
-                            <a href="#" class="tab tab-large"><span>Telegram</span></a>
-                        </nav>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <div class="footer">
-                        <p>~ 2026年から愛を込めて ~</p>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </div>
+            </div>
+
+            <!-- 右：ソーシャル -->
+            <div class="panel panel-social" style="animation: swayRight 5s ease-in-out infinite;">
+                <div class="panel-inner">
+                    <h3 class="panel-title pixel-text">SOCIALS</h3>
+                    <nav class="panel-nav-links">
+                        <a href="https://twitter.com" class="wood-btn" id="btn-twitter">
+                            <img src="../resource/icons/twitter.png" alt="" />
+                            <span>Twitter</span>
+                        </a>
+                        <a href="https://discord.com" class="wood-btn" id="btn-discord">
+                            <img src="../resource/icons/discord.png" alt="" />
+                            <span>Discord</span>
+                        </a>
+                        <a href="https://bsky.app" class="wood-btn" id="btn-bluesky">
+                            <img src="../resource/icons/bluesky.png" alt="" />
+                            <span>Bluesky</span>
+                        </a>
+                        <a href="https://store.steampowered.com" class="wood-btn" id="btn-steam">
+                            <img src="../resource/icons/steam.png" alt="" />
+                            <span>Steam</span>
+                        </a>
+                        <a href="https://t.me" class="wood-btn" id="btn-telegram">
+                            <img src="../resource/icons/telegram.png" alt="" />
+                            <span>Telegram</span>
+                        </a>
+                        <a href="https://neocities.org" class="wood-btn" id="btn-neocities">
+                            <img src="../resource/icons/neocities.png" alt="" />
+                            <span>Neocities</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ④ 木棚 -->
+        <div class="shelf-row">
+            <img src="../resource/shelf.png" alt="" class="shelf-img" draggable="false" />
+        </div>
+
+        <!-- ⑤ フッター -->
+        <div class="footer">
+            <p>~ 2026年から愛を込めて ~</p>
+        </div>
+
+    </div>
+
+    <!-- ライトボックス -->
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">✕ 閉じる</span>
+        <img src="" alt="" class="lightbox-img" id="lightbox-img" />
+    </div>
 
     <script src="../script.js"></script>
+    <script>
+        // ===== Gallery タブ切り替え =====
+        const tabs = document.querySelectorAll('.gallery-tab');
+        const grid = document.getElementById('gallery-grid');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // 将来的に data-cat でフィルタリング
+                // 今は全部表示
+            });
+        });
+
+        // ===== ライトボックス =====
+        const lightbox    = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn    = document.getElementById('lightbox-close');
+
+        document.querySelectorAll('.art-card:not(.placeholder) img').forEach(img => {
+            img.addEventListener('click', e => {
+                e.stopPropagation();
+                lightboxImg.src = img.src;
+                lightbox.classList.add('open');
+            });
+        });
+
+        lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+        closeBtn.addEventListener('click',  () => lightbox.classList.remove('open'));
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') lightbox.classList.remove('open');
+        });
+    </script>
+
 </body>
 
 </html>

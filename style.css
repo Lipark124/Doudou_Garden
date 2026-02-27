@@ -1,53 +1,75 @@
 /* ========================================
-   DreamDoudou - Retro 2010s Style
-   レトロな書斎テーマ
+   DreamDoudou - Stardew Valley Pixel Style
+   ドットアート書斎テーマ
 ======================================== */
 
-/* ---------- Color Variables ---------- */
+/* ---- Google Fonts (Pixel) ---- */
+/* DotGothic16 / Silkscreen loaded via HTML <link> */
+
+/* ---- Color Variables ---- */
 :root {
-    --bg-main: #4a3c31;
-    --bg-dark: #2d2418;
-    --bg-panel: #5c4a3d;
+    --bg-dark: #2a1f14;
+    --wood-dark: #3d2a18;
+    --wood-mid: #5a3d22;
+    --wood-light: #7a5632;
+    --wood-highlight: #a07848;
 
-    --parchment: #f0e6d3;
-    --parchment-dark: #d4c4a8;
-    --parchment-border: #a89070;
+    --parchment: #f0e0c4;
+    --parchment-dark: #d4b888;
+    --parchment-border: #8b6030;
 
-    --wood: #6b4c35;
-    --wood-dark: #4a3728;
-    --wood-light: #8b6b4a;
+    --text-dark: #2d1f0f;
+    --text-light: #f0dfc0;
+    --text-gold: #f5c842;
 
-    --text-dark: #2d2418;
-    --text-light: #f0e6d8;
+    --panel-bg: #4a3020;
+    --border-dark: #1a1208;
+    --border-light: #7a5632;
 
-    --link-color: #8b5a2b;
-    --link-hover: #cd853f;
-
-    --border-color: #3d3028;
+    --shadow: rgba(0, 0, 0, 0.7);
 }
 
-/* ---------- Reset ---------- */
-* {
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ---------- Body ---------- */
+/* ---- Body ---- */
 body {
-    background-color: var(--bg-main);
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233d3028' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    font-family: Georgia, 'Times New Roman', serif;
+    background-color: var(--bg-dark);
+    background-image: url("resource/bg_wall.png");
+    background-size: 400px 400px;
+    background-repeat: repeat;
+    image-rendering: pixelated;
+    font-family: 'DotGothic16', 'Silkscreen', 'MS Gothic', monospace;
     color: var(--text-light);
     min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
 }
 
-/* ---------- Plant Decorations ---------- */
+/* ---- Pixel Text Utility ---- */
+.pixel-text {
+    font-family: 'Silkscreen', 'DotGothic16', monospace;
+    image-rendering: pixelated;
+}
+
+/* ---- Background Wall (overlay) ---- */
+.bg-wall {
+    display: none;
+    /* body already has bg_wall, so this div is not needed */
+}
+
+/* ---- Plant Decorations (fixed) ---- */
 .plant-decor {
     position: fixed;
     top: 0;
     pointer-events: none;
-    z-index: 100;
+    z-index: 200;
 }
 
 .plant-decor img {
@@ -56,13 +78,12 @@ body {
     object-fit: contain;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    -ms-interpolation-mode: nearest-neighbor;
 }
 
 .plant-left {
     left: 0;
-    width: 18vw;
-    min-width: 100px;
+    width: 15vw;
+    min-width: 80px;
 }
 
 .plant-right {
@@ -71,357 +92,658 @@ body {
     min-width: 30px;
 }
 
-/* ---------- Main Table Layout ---------- */
-.main-layout {
+/* ---- Board Scene Container ---- */
+.board-scene {
+    position: relative;
     width: 100%;
-    max-width: 950px;
+    max-width: 900px;
     margin: 0 auto;
-    border-collapse: collapse;
-    background: var(--bg-panel);
-    border: 4px solid var(--border-color);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-/* ---------- Title Banner ---------- */
-.title-banner {
-    background: linear-gradient(180deg, var(--wood-dark) 0%, var(--wood) 50%, var(--wood-dark) 100%);
-    padding: 15px 20px;
-    text-align: center;
-    border-bottom: 4px solid var(--border-color);
-}
-
-.title-banner .logo {
-    width: 60px;
-    height: auto;
-    vertical-align: middle;
-    margin-right: 15px;
+    padding: 0 0 40px;
+    z-index: 10;
+    /* Give the whole scene a background so no checkerboard shows through transparent PNGs */
+    background-color: var(--bg-dark);
+    background-image: url("resource/bg_wall.png");
+    background-size: 400px 400px;
+    background-repeat: repeat;
     image-rendering: pixelated;
-    image-rendering: crisp-edges;
+    box-shadow: 0 0 0 4px var(--border-dark), 0 0 60px rgba(0, 0, 0, 0.8);
 }
 
-.title-banner .title-img {
+/* =====================================================
+   ① タイトル木板
+===================================================== */
+.title-board {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+    animation: titleSwing 4s ease-in-out infinite;
+    transform-origin: center top;
+    user-select: none;
+    /* SVG has no background — transparent behind the board */
+    line-height: 0;
+}
+
+.title-board:active {
+    animation-play-state: paused;
+    transform: rotate(-1deg);
+}
+
+.title-board-img {
+    width: 100%;
     height: auto;
-    width: 64%;
-    vertical-align: middle;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-}
-
-.title-banner h1 {
-    display: inline;
-    font-family: 'Times New Roman', serif;
-    font-size: 2rem;
-    color: var(--parchment);
-    text-shadow: 2px 2px 0 var(--bg-dark);
-    letter-spacing: 2px;
-    vertical-align: middle;
-}
-
-/* ---------- Language Switcher ---------- */
-.lang-switch {
     display: block;
-    margin-top: 10px;
+    /* SVG is vector; no need for pixelated rendering */
+    filter: drop-shadow(0px 6px 0 rgba(0, 0, 0, 0.5));
+}
+
+@keyframes titleSwing {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(0.4deg);
+    }
+
+    75% {
+        transform: rotate(-0.4deg);
+    }
+}
+
+/* Lang Switch */
+.lang-switch {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
 }
 
 .lang-link,
 .lang-current {
     display: inline-block;
-    padding: 4px 10px;
-    margin: 0 3px;
-    font-size: 0.85rem;
-    border: 2px outset var(--parchment);
+    padding: 4px 8px;
+    font-family: 'Silkscreen', monospace;
+    font-size: 0.65rem;
+    border: 2px solid var(--wood-dark);
     text-decoration: none;
+    image-rendering: pixelated;
 }
 
 .lang-link {
     background: var(--parchment-dark);
     color: var(--text-dark);
+    box-shadow: 2px 2px 0 var(--border-dark);
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .lang-link:hover {
-    background: var(--parchment);
-    border-style: inset;
+    transform: translateY(-2px);
+    box-shadow: 2px 4px 0 var(--border-dark);
+}
+
+.lang-link:active {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 var(--border-dark);
 }
 
 .lang-current {
-    background: var(--wood-light);
-    color: var(--parchment);
-    border-style: inset;
-    cursor: default;
+    background: var(--wood-mid);
+    color: var(--text-gold);
 }
 
-/* ---------- Sidebar ---------- */
-.sidebar {
-    width: 140px;
-    background: var(--wood-dark);
-    border: 2px solid var(--border-color);
-    padding: 0;
+/* =====================================================
+   ② 鎖・フック行
+===================================================== */
+.hooks-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 80%;
+    margin: 0 auto;
+    height: 80px;
 }
 
-.sidebar-box {
-    padding: 10px;
+.hooks-img {
+    width: 100%;
+    height: 80px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    object-fit: fill;
 }
 
-.sidebar h2 {
-    font-family: 'Times New Roman', serif;
-    font-size: 1.1rem;
-    color: var(--parchment);
+/* =====================================================
+   ③ 3列パネル（ぶら下がり）
+===================================================== */
+.hanging-panels {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 12px;
+}
+
+/* 各パネル共通 */
+.panel {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 揺れアニメーション */
+.sway-left {
+    animation: swayLeft 5s ease-in-out infinite;
+    transform-origin: center top;
+}
+
+.sway-center {
+    animation: swayCenter 6s ease-in-out infinite;
+    transform-origin: center top;
+}
+
+.sway-right {
+    animation: swayRight 4.5s ease-in-out infinite;
+    transform-origin: center top;
+}
+
+@keyframes swayLeft {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    33% {
+        transform: rotate(-1.2deg);
+    }
+
+    66% {
+        transform: rotate(0.6deg);
+    }
+}
+
+@keyframes swayCenter {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    40% {
+        transform: rotate(0.8deg);
+    }
+
+    80% {
+        transform: rotate(-0.8deg);
+    }
+}
+
+@keyframes swayRight {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    30% {
+        transform: rotate(1deg);
+    }
+
+    70% {
+        transform: rotate(-0.5deg);
+    }
+}
+
+/* ---- 木板パネル（ナビ・ソーシャル共通） ---- */
+.wood-panel {
+    background: linear-gradient(180deg, #4a3020 0%, #3d2a18 40%, #4a3020 100%);
+    border: 4px solid var(--border-dark);
+    border-top: 4px solid var(--wood-light);
+    border-left: 4px solid var(--wood-light);
+    padding: 10px 8px;
+    box-shadow: 4px 4px 0 var(--border-dark), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+}
+
+.panel-inner {
+    width: 100%;
+}
+
+.panel-title {
+    font-size: 0.75rem;
+    color: var(--text-gold);
     text-align: center;
-    padding: 8px;
-    margin-bottom: 10px;
-    background: var(--wood);
-    border: 2px inset var(--wood-light);
+    padding: 6px 0;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--wood-mid);
+    text-shadow: 2px 2px 0 var(--border-dark);
+    letter-spacing: 1px;
 }
 
-/* ---------- Navigation Tabs ---------- */
-.nav-tabs {
+/* ---- 木板ボタンリスト ---- */
+.wood-btn-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
-.tab {
+/* ---- 木板ボタン ---- */
+.wood-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px;
-    background: var(--parchment-dark);
-    border: 2px outset var(--parchment);
+    gap: 6px;
+    padding: 8px 6px;
+    background: linear-gradient(180deg, #6b4c28 0%, #5a3d20 50%, #4a3218 100%);
+    border: 2px solid var(--border-dark);
+    border-top: 2px solid var(--wood-highlight);
+    border-left: 2px solid var(--wood-highlight);
     text-decoration: none;
-    color: var(--text-dark);
-    font-size: 0.85rem;
-    font-weight: bold;
-    transition: all 0.1s;
+    color: var(--text-gold);
+    font-family: 'Silkscreen', 'DotGothic16', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--border-dark);
+    transition: transform 0.08s step-end, box-shadow 0.08s step-end;
+    image-rendering: pixelated;
+    position: relative;
+    overflow: hidden;
 }
 
-.tab:hover {
-    background: var(--parchment);
-    border-style: inset;
+.wood-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
 }
 
-.tab:active {
-    border-style: inset;
-    padding-left: 12px;
-    padding-top: 12px;
+.wood-btn:hover {
+    background: linear-gradient(180deg, #8b6832 0%, #7a5628 50%, #6b4820 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 3px 5px 0 var(--border-dark);
 }
 
-.tab img {
-    width: 24px;
-    height: 24px;
+.wood-btn:active,
+.wood-btn.pressed {
+    transform: translateY(3px) !important;
+    box-shadow: 0 0 0 var(--border-dark) !important;
+    border-top-color: var(--border-dark);
+    border-left-color: var(--border-dark);
+    border-bottom-color: var(--wood-highlight);
+    border-right-color: var(--wood-highlight);
+    background: linear-gradient(180deg, #4a3218 0%, #5a3d20 50%, #6b4c28 100%);
+}
+
+.wood-btn img {
+    width: 28px;
+    height: 28px;
     object-fit: contain;
     flex-shrink: 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
 
-.tab span {
+.wood-btn span {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-shadow: 1px 1px 0 var(--border-dark);
 }
 
-/* Larger tabs for Socials */
-.tab-large {
-    padding: 12px;
+/* ---- About Me 中央パネル ---- */
+.panel-about {
+    flex: 1.4;
 }
 
-.tab-large img {
-    width: 32px;
-    height: 32px;
+.about-paper-container {
+    position: relative;
+    width: 100%;
+    /* Parchment-style box instead of overlaying PNG */
+    background: #e8d9bc;
+    background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3Crect x='2' y='2' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
+    background-size: 4px 4px;
+    border: 4px solid var(--parchment-border);
+    border-top: 4px solid #c8b080;
+    border-left: 4px solid #c8b080;
+    box-shadow: 4px 8px 0 rgba(0, 0, 0, 0.6);
+    padding: 16px 14px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    /* Curled bottom-right corner effect */
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 92% 100%, 0 100%);
 }
 
-.tab-large span {
-    font-size: 0.9rem;
+.about-paper-bg {
+    display: none;
+    /* Hide the PNG with baked checkerboard */
 }
 
-/* ---------- Content Area ---------- */
-.content-area {
-    background: var(--bg-panel);
-    padding: 15px;
-    border-left: 2px solid var(--border-color);
-    border-right: 2px solid var(--border-color);
+.about-content {
+    position: static;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
-/* ---------- Parchment Box ---------- */
-.parchment {
-    background: var(--parchment);
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+.about-title {
+    font-family: 'Silkscreen', monospace;
+    font-size: 0.75rem;
     color: var(--text-dark);
-    padding: 20px;
-    border: 3px ridge var(--parchment-border);
-    box-shadow: inset 0 0 30px rgba(139, 107, 74, 0.2);
-}
-
-.parchment h2 {
-    font-family: 'Times New Roman', serif;
-    font-size: 1.5rem;
+    letter-spacing: 3px;
+    border-bottom: 2px dashed var(--parchment-border);
+    padding-bottom: 6px;
+    width: 100%;
     text-align: center;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    border-bottom: 2px solid var(--parchment-border);
-}
-
-.parchment h3 {
-    font-family: 'Times New Roman', serif;
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-    color: var(--wood-dark);
-}
-
-/* ---------- Profile Section ---------- */
-.profile-section {
-    text-align: center;
-    margin-bottom: 15px;
+    text-shadow: none;
 }
 
 .profile-frame {
-    display: inline-block;
-    width: 100px;
-    height: 100px;
-    background: var(--parchment-dark);
-    border: 3px ridge var(--parchment-border);
-    padding: 5px;
+    width: 72px;
+    height: 72px;
+    background: #ccc0a8;
+    border: 3px solid #8b6030;
+    padding: 3px;
+    image-rendering: pixelated;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .profile-frame img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    image-rendering: pixelated;
 }
 
-/* ---------- Text Sections ---------- */
-.text-section {
-    margin-bottom: 15px;
-}
-
-.text-section p {
-    font-size: 0.95rem;
+.about-text {
+    width: 100%;
+    font-family: 'DotGothic16', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dark);
     line-height: 1.6;
 }
 
-.divider {
-    border: none;
-    border-top: 1px dashed var(--parchment-border);
-    margin: 15px 0;
+.about-text h3 {
+    font-family: 'Silkscreen', monospace;
+    font-size: 0.7rem;
+    color: var(--wood-light);
+    margin-bottom: 4px;
+    margin-top: 4px;
 }
 
-/* ---------- Interest List ---------- */
+.about-text p {
+    margin-bottom: 4px;
+}
+
+.pixel-divider {
+    border: none;
+    border-top: 2px dashed var(--parchment-border);
+    margin: 6px 0;
+}
+
 .interest-list {
     list-style: none;
     padding: 0;
 }
 
 .interest-list li {
-    background: rgba(255, 255, 255, 0.3);
-    border: 1px solid var(--parchment-border);
-    border-left: 4px solid var(--wood);
-    padding: 10px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 3px solid var(--wood-light);
+    padding: 3px 5px;
+    margin-bottom: 4px;
+    font-size: 0.65rem;
+    line-height: 1.4;
 }
 
-.interest-list li:hover {
-    background: rgba(255, 255, 255, 0.5);
+/* =====================================================
+   ④ 木棚
+===================================================== */
+.shelf-row {
+    width: 100%;
+    margin-top: 0;
+    line-height: 0;
 }
 
-/* ---------- Footer ---------- */
+.shelf-img {
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: block;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* =====================================================
+   ⑤ 下段コンテンツ
+===================================================== */
+.lower-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 16px 10px;
+}
+
+/* Gallery 巻物 */
+.scroll-item {
+    position: relative;
+    display: block;
+    width: 180px;
+    flex-shrink: 0;
+    text-decoration: none;
+    transition: transform 0.1s step-end;
+    cursor: pointer;
+    /* SVG has no background — transparent area shows the wall */
+    background: transparent;
+}
+
+.scroll-item img {
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(4px 8px 0 rgba(0, 0, 0, 0.5));
+    display: block;
+}
+
+.scroll-item:hover {
+    transform: translateY(-4px) rotate(-1deg);
+}
+
+.scroll-item:active {
+    transform: translateY(2px) rotate(1deg);
+}
+
+.scroll-item .lower-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* 右側コンテンツ群 */
+.lower-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Lore / Experiment 共通 */
+.lower-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.1s step-end;
+}
+
+.lower-item:hover {
+    transform: translateY(-3px);
+}
+
+.lower-item:active {
+    transform: translateY(2px);
+}
+
+.lower-icon {
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.5));
+}
+
+/* Lore */
+.lore-item {
+    background: linear-gradient(90deg, #4a3020 0%, #5a3d20 40%, #4a3020 100%);
+    border: 3px solid var(--border-dark);
+    border-top: 3px solid var(--wood-light);
+    padding: 8px 12px;
+    box-shadow: 4px 4px 0 var(--border-dark);
+    width: 100%;
+}
+
+.lower-text-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lower-badge {
+    display: inline-block;
+    background: #d4a017;
+    color: #1a0f00;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border: 2px solid #8b6800;
+    box-shadow: 2px 2px 0 #5a4000;
+}
+
+.lower-label-book {
+    font-size: 1rem;
+    color: var(--text-gold);
+    text-shadow: 2px 2px 0 var(--border-dark);
+}
+
+/* Experiment */
+.exp-item {
+    background: linear-gradient(180deg, #6b4c28 0%, #4a3020 100%);
+    border: 3px solid var(--border-dark);
+    border-top: 3px solid var(--wood-highlight);
+    padding: 8px 12px;
+    box-shadow: 4px 4px 0 var(--border-dark);
+    position: relative;
+}
+
+.exp-item .lower-label {
+    color: var(--text-gold);
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 0 var(--border-dark);
+}
+
+.sparkle {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    color: #fffcc0;
+    font-size: 1rem;
+    animation: sparkleAnim 2s ease-in-out infinite;
+}
+
+@keyframes sparkleAnim {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: scale(0.7) rotate(30deg);
+    }
+}
+
+/* =====================================================
+   フッター
+===================================================== */
 .footer {
-    background: var(--wood-dark);
-    padding: 15px;
+    background: linear-gradient(180deg, var(--wood-dark) 0%, #1a1208 100%);
+    border-top: 4px solid var(--border-dark);
+    padding: 16px;
     text-align: center;
-    border-top: 4px solid var(--border-color);
 }
 
 .footer p {
-    font-style: italic;
-    font-size: 0.9rem;
+    font-family: 'Silkscreen', monospace;
+    font-size: 0.65rem;
     color: var(--parchment-dark);
     margin-bottom: 10px;
+    text-shadow: 1px 1px 0 var(--border-dark);
 }
 
 .footer img {
     max-width: 80px;
     opacity: 0.8;
+    image-rendering: pixelated;
 }
 
 .footer img:hover {
     opacity: 1;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-    .plant-decor {
-        width: 50px;
+/* =====================================================
+   Easter Egg: バナナ雨
+===================================================== */
+#banana-rain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.banana-drop {
+    position: absolute;
+    top: -60px;
+    font-size: 2rem;
+    animation: bananeFall linear forwards;
+    pointer-events: none;
+}
+
+@keyframes bananeFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
     }
 
-    .main-layout {
-        display: block;
-        width: 100%;
-    }
-
-    .main-layout tbody,
-    .main-layout tr,
-    .main-layout td {
-        display: block;
-        width: 100%;
-    }
-
-    .sidebar {
-        width: 100%;
-    }
-
-    .sidebar-left {
-        order: 2;
-    }
-
-    .sidebar-right {
-        order: 3;
-    }
-
-    .content-area {
-        order: 1;
-        border: none;
-    }
-
-    .nav-tabs {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .tab {
-        flex: 0 0 auto;
-        padding: 8px 12px;
-    }
-
-    .title-banner h1 {
-        font-size: 1.5rem;
-    }
-
-    .title-banner .title-img {
-        height: 60px;
-    }
-
-    .title-banner .logo {
-        width: 50px;
-        margin-right: 8px;
+    100% {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0.5;
     }
 }
 
-/* ---------- Links ---------- */
-a {
-    color: var(--link-color);
-}
-
-a:hover {
-    color: var(--link-hover);
-}
-
-/* ---------- Scrollbar (Retro) ---------- */
+/* =====================================================
+   Scrollbar
+===================================================== */
 ::-webkit-scrollbar {
-    width: 12px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -429,10 +751,54 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--wood);
+    background: var(--wood-mid);
     border: 2px solid var(--wood-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--wood-light);
+}
+
+/* =====================================================
+   Links
+===================================================== */
+a {
+    color: var(--wood-highlight);
+}
+
+a:hover {
+    color: var(--text-gold);
+}
+
+/* =====================================================
+   Responsive
+===================================================== */
+@media (max-width: 700px) {
+    .hanging-panels {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .panel,
+    .panel-about {
+        width: 95%;
+        flex: none;
+    }
+
+    .plant-left {
+        width: 60px;
+    }
+
+    .plant-right {
+        width: 30px;
+    }
+
+    .lower-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .scroll-item {
+        width: 140px;
+    }
 }
