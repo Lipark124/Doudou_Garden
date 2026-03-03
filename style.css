@@ -64,25 +64,29 @@ body {
     /* body already has bg_wall, so this div is not needed */
 }
 
-/* ---- Plant Decorations (scrolls with page, hidden on narrow screens) ---- */
+/* ---- Plant Decorations (scrolls with page, fits within page height) ---- */
 .plant-decor {
     position: absolute;
     top: 0;
+    height: 100%;
     pointer-events: none;
     z-index: 200;
+    overflow: hidden;
 }
 
 .plant-decor img {
-    height: auto;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+    object-position: top;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
 
 .plant-left {
     left: 0;
-    width: 15vw;
-    max-width: 160px;
+    width: 22vw;
+    max-width: 240px;
 }
 
 .plant-right {
@@ -226,7 +230,7 @@ body {
 .hanging-panels {
     display: flex;
     gap: 12px;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
     padding: 0 12px;
 }
@@ -323,116 +327,125 @@ body {
     }
 }
 
-/* ---- 木板パネル（ナビ・ソーシャル共通） ---- */
+/* =====================================================
+   Stardew Valley風 木板パネル + ボタン（PNG画像版）
+   Nano Banana生成画像を背景に使用
+===================================================== */
+
+/* ---- 外枠パネル（ナビ・ソーシャル共通） ---- */
 .wood-panel {
-    background: linear-gradient(180deg, #4a3020 0%, #3d2a18 40%, #4a3020 100%);
-    border: 4px solid var(--border-dark);
-    border-top: 4px solid var(--wood-light);
-    border-left: 4px solid var(--wood-light);
-    padding: 10px 8px;
-    box-shadow: 4px 4px 0 var(--border-dark), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    /* Nano Banana生成のパネル背景PNGを使用 */
+    background: url("resource/nav_panel_bg.png") center / 100% 100% no-repeat;
+    border: none;
+    padding: 16px 22px 24px;
     image-rendering: pixelated;
+    position: relative;
+    /* パネル影 */
+    filter: drop-shadow(4px 6px 0 rgba(0, 0, 0, 0.5));
 }
 
 .panel-inner {
     width: 100%;
+    height: 100%;
 }
 
+/* パネルタイトル（「Navigate」「Socials」） */
 .panel-title {
-    font-size: 0.75rem;
-    color: var(--text-gold);
+    font-size: 0.72rem;
+    font-family: 'Silkscreen', monospace;
+    color: #ffd050;
     text-align: center;
-    padding: 6px 0;
-    margin-bottom: 8px;
-    border-bottom: 2px solid var(--wood-mid);
-    text-shadow: 2px 2px 0 var(--border-dark);
-    letter-spacing: 1px;
+    padding: 0 0 6px;
+    margin-bottom: 6px;
+    border-bottom: none;
+    text-shadow:
+        1px 1px 0 #3b1f0a,
+        -1px 1px 0 #3b1f0a,
+        0 2px 0 #1a0800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-/* ---- 木板ボタンリスト ---- */
+/* ---- ボタンリスト ---- */
 .wood-btn-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    list-style: none;
+    padding: 0;
 }
 
-/* ---- ダークゲーミングUIボタン ---- */
+/* ---- Stardew Valley風ボタン（PNG背景版） ---- */
 .wood-btn {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 0;
     width: 100%;
+    min-height: 42px;
     padding: 0;
-    background: linear-gradient(180deg, #1e1a2e 0%, #13101f 100%);
-    border: 2px solid #0a0814;
-    border-bottom: 3px solid #0a0814;
-    border-right: 3px solid #0a0814;
     text-decoration: none;
-    color: #d8d0f0;
-    font-family: 'Silkscreen', 'DotGothic16', monospace;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 2px;
     cursor: pointer;
-    transition: none;
-    image-rendering: pixelated;
+    user-select: none;
     position: relative;
     overflow: hidden;
+
+    /* Nano Banana生成のボタン背景PNGを使用 */
+    background: url("resource/nav_btn_bg.png") center / 100% 100% no-repeat;
+    border: none;
+
+    font-family: 'Silkscreen', 'DotGothic16', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #3b1f0a;
+    letter-spacing: 1px;
+    image-rendering: pixelated;
+    transition: transform 0.05s step-end;
 }
 
+/* ホバー：CSSで明るくする（PNG切替なし） */
 .wood-btn:hover {
-    background: linear-gradient(180deg, #2e2848 0%, #1e1838 100%);
-    color: #ffffff;
-    border-color: #5040a0;
+    filter: brightness(1.2);
+    color: #250f00;
 }
 
+/* 押した瞬間 */
 .wood-btn:active,
 .wood-btn.pressed {
-    transform: translateY(2px);
-    border-bottom-width: 1px;
-    border-right-width: 1px;
+    transform: translateY(2px) scale(0.98);
 }
 
-/* アイコンエリア (右端)—ダークな冗積層ボックス */
+/* アイコン（imgタグ） */
 .wood-btn img {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     object-fit: contain;
     flex-shrink: 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 4px;
-    border-left: 2px solid rgba(0, 0, 0, 0.5);
+    padding: 3px;
+    margin-left: auto;
+    margin-right: 4px;
+    order: 2;
+    /* アイコンはPNG背景の上に重ねるので透過で */
+    filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.3));
 }
 
-/* ンテキストエリア (左端) */
+/* ラベルテキスト */
 .wood-btn span {
     flex: 1;
-    padding: 10px 10px;
+    padding: 10px 8px 10px 14px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    text-shadow: 1px 1px 0 #000;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     text-transform: uppercase;
+    order: 1;
 }
 
-/* ホバー時の左辺アクセントライン */
-.wood-btn::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: #5040a0;
-    opacity: 0;
-    transition: opacity 0s;
-}
-
-.wood-btn:hover::before {
-    opacity: 1;
+/* ::before / ::after クリア（PNG版では不要） */
+.wood-btn::before,
+.wood-btn::after {
+    display: none;
 }
 
 /* ---- About Me 中央パネル ---- */
