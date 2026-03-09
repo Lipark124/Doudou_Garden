@@ -263,10 +263,8 @@ body {
     font-family: 'Silkscreen', monospace;
     color: #2c0a0a;
     text-align: center;
-    padding: 10px 0 0;
-    /* Changed padding to fit at bottom */
-    margin-bottom: 0;
-    margin-top: 6px;
+    padding: 0 0 6px;
+    margin-bottom: 6px;
     border-bottom: none;
     text-shadow:
         1px 1px 0 #ffffff,
@@ -291,7 +289,6 @@ body {
     min-height: 63px;
     font-size: 1.6rem;
     position: relative;
-    overflow: hidden;
 }
 
 .panel-nav .wood-btn span {
@@ -332,78 +329,6 @@ body {
     right: 2px;
     top: 50%;
     transform: translateY(-50%);
-}
-
-/* ---- ダッシュボード風プッシュ/プルダウン パネル共通 ---- */
-.panel-nav,
-.panel-social {
-    position: fixed;
-    top: 0;
-    width: 260px;
-    z-index: 1000;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    /* パネルのタイトルだけ（約60px）見えるように本体を上に隠す */
-    transform: translateY(calc(-100% + 75px));
-}
-
-.panel-nav:hover,
-.panel-social:hover {
-    transform: translateY(0);
-}
-
-/* 左右の配置位置 */
-.panel-nav {
-    left: 40px;
-}
-
-.panel-social {
-    right: 40px;
-}
-
-/* ぶら下がるロープ（擬似要素で表現） */
-.panel-nav::before,
-.panel-nav::after,
-.panel-social::before,
-.panel-social::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    /* パネルの上からさらに上へ伸びる */
-    width: 8px;
-    height: 100vh;
-    /* 画面外まで十分な長さ */
-    background: url("resource/rope.png") repeat-y center;
-    image-rendering: pixelated;
-    z-index: -1;
-}
-
-.panel-nav::before,
-.panel-social::before {
-    left: 45px;
-}
-
-.panel-nav::after,
-.panel-social::after {
-    right: 45px;
-}
-
-/* パネル内部をFlexカラムにしてタイトルを一番下に持ってくる */
-.panel-nav .panel-inner,
-.panel-social .panel-inner {
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-nav .wood-btn-list,
-.panel-social .wood-btn-list {
-    order: 1;
-    /* ボタンリストを上に */
-}
-
-.panel-nav .panel-title,
-.panel-social .panel-title {
-    order: 2;
-    /* タイトルを下に（ハンドル代わり） */
 }
 
 /* ---- Stardew Valley風ボタン（Nine-slice版） ---- */
