@@ -199,26 +199,6 @@ body {
 }
 
 /* =====================================================
-   ② 鎖・フック行
-===================================================== */
-.hooks-row {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 80%;
-    margin: 0 auto;
-    height: 80px;
-}
-
-.hooks-img {
-    width: 100%;
-    height: 80px;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    object-fit: fill;
-}
-
-/* =====================================================
    ③ 3列パネル（ぶら下がり）
 ===================================================== */
 .hanging-panels {
@@ -240,10 +220,10 @@ body {
 /* ピン（上部中央に突き刺さって見える） */
 .panel-pin {
     position: absolute;
-    top: -18px;
+    top: -5px;
     left: 50%;
     transform: translateX(-50%);
-    width: 28px;
+    width: 14px;
     height: auto;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
@@ -334,6 +314,7 @@ body {
     padding: 16px 22px 24px;
     image-rendering: pixelated;
     position: relative;
+    filter: drop-shadow(5px 2px 0 rgba(0, 0, 0, 0.2));
 }
 
 .panel-inner {
@@ -351,9 +332,10 @@ body {
     margin-bottom: 6px;
     border-bottom: none;
     text-shadow:
-        1px 1px 0 #ffba85,
-        -1px 1px 0 #ffba85,
-        0 2px 0 #ffba85;
+        1px 1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px -1px 0 #ffffff,
+        -1px -1px 0 #ffffff;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
@@ -394,7 +376,7 @@ body {
     transition: transform 0.05s step-end;
 }
 
-/* ホバー：CSSで明るくする（PNG切替なし） */
+/* ホバー：CSSで明るくする */
 .wood-btn:hover {
     filter: brightness(1.2);
     color: #250f00;
