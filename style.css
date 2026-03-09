@@ -58,12 +58,6 @@ body {
     image-rendering: pixelated;
 }
 
-/* ---- Background Wall (overlay) ---- */
-.bg-wall {
-    display: none;
-    /* body already has bg_wall, so this div is not needed */
-}
-
 /* ---- Plant Decorations (scrolls with page, fits within page height) ---- */
 .plant-decor {
     position: absolute;
@@ -110,7 +104,6 @@ body {
     margin: 0 auto;
     padding: 0 0 40px;
     z-index: 10;
-    /* Give the whole scene a background so no checkerboard shows through transparent PNGs */
     background-color: var(--bg-dark);
     background-image: url("resource/bg_wall.png");
     background-size: 400px 400px;
@@ -139,9 +132,10 @@ body {
 }
 
 .title-board-img {
-    width: 100%;
+    width: 50%;
     height: auto;
     display: block;
+    margin: 0 auto;
     /* SVG is vector; no need for pixelated rendering */
     filter: drop-shadow(0px 6px 0 rgba(0, 0, 0, 0.5));
 }
@@ -279,7 +273,7 @@ body {
     transform-origin: center top;
 }
 
-@keyframes swayLeft {
+/* @keyframes swayLeft {
 
     0%,
     100% {
@@ -293,7 +287,7 @@ body {
     66% {
         transform: rotate(0.6deg);
     }
-}
+} */
 
 @keyframes swayCenter {
 
@@ -311,7 +305,7 @@ body {
     }
 }
 
-@keyframes swayRight {
+/* @keyframes swayRight {
 
     0%,
     100% {
@@ -325,7 +319,7 @@ body {
     70% {
         transform: rotate(-0.5deg);
     }
-}
+} */
 
 /* =====================================================
    Stardew Valley風 木板パネル + ボタン（PNG画像版）
@@ -340,8 +334,6 @@ body {
     padding: 16px 22px 24px;
     image-rendering: pixelated;
     position: relative;
-    /* パネル影 */
-    filter: drop-shadow(4px 6px 0 rgba(0, 0, 0, 0.5));
 }
 
 .panel-inner {
@@ -351,17 +343,17 @@ body {
 
 /* パネルタイトル（「Navigate」「Socials」） */
 .panel-title {
-    font-size: 0.72rem;
+    font-size: 1.00rem;
     font-family: 'Silkscreen', monospace;
-    color: #ffd050;
+    color: #2c0a0a;
     text-align: center;
     padding: 0 0 6px;
     margin-bottom: 6px;
     border-bottom: none;
     text-shadow:
-        1px 1px 0 #3b1f0a,
-        -1px 1px 0 #3b1f0a,
-        0 2px 0 #1a0800;
+        1px 1px 0 #ffba85,
+        -1px 1px 0 #ffba85,
+        0 2px 0 #ffba85;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
