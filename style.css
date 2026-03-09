@@ -3,8 +3,7 @@
    ドットアート書斎テーマ
 ======================================== */
 
-/* ---- Google Fonts (Pixel) ---- */
-/* DotGothic16 / Silkscreen loaded via HTML <link> */
+
 
 /* ---- Color Variables ---- */
 :root {
@@ -214,60 +213,13 @@ body {
     flex: 1;
     min-width: 0;
     position: relative;
-    /* pin の基準 */
-}
-
-/* ピン（上部中央に突き刺さって見える） */
-.panel-pin {
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 14px;
-    height: auto;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    z-index: 20;
-    pointer-events: none;
-    filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.6));
-}
-
-/* hooks-row は非表示（pinに置き換え済み） */
-.hooks-row {
-    display: none;
 }
 
 /* 揺れアニメーション */
-.sway-left {
-    animation: swayLeft 5s ease-in-out infinite;
-    transform-origin: center top;
-}
-
 .sway-center {
     animation: swayCenter 6s ease-in-out infinite;
     transform-origin: center top;
 }
-
-.sway-right {
-    animation: swayRight 4.5s ease-in-out infinite;
-    transform-origin: center top;
-}
-
-/* @keyframes swayLeft {
-
-    0%,
-    100% {
-        transform: rotate(0deg);
-    }
-
-    33% {
-        transform: rotate(-1.2deg);
-    }
-
-    66% {
-        transform: rotate(0.6deg);
-    }
-} */
 
 @keyframes swayCenter {
 
@@ -285,33 +237,16 @@ body {
     }
 }
 
-/* @keyframes swayRight {
-
-    0%,
-    100% {
-        transform: rotate(0deg);
-    }
-
-    30% {
-        transform: rotate(1deg);
-    }
-
-    70% {
-        transform: rotate(-0.5deg);
-    }
-} */
-
-/* =====================================================
-   Stardew Valley風 木板パネル + ボタン（PNG画像版）
-   Nano Banana生成画像を背景に使用
-===================================================== */
 
 /* ---- 外枠パネル（ナビ・ソーシャル共通） ---- */
 .wood-panel {
-    /* Nano Banana生成のパネル背景PNGを使用 */
-    background: url("resource/nav_panel_bg.png") center / 100% 100% no-repeat;
-    border: none;
-    padding: 16px 22px 24px;
+    background: none;
+    border: 35px solid transparent;
+    border-image-source: url("resource/panel/nav_panel_sprite.png");
+    border-image-slice: 35 fill;
+    border-image-width: 35px;
+    border-image-repeat: stretch;
+    padding: 8px 0 16px;
     image-rendering: pixelated;
     position: relative;
     filter: drop-shadow(5px 2px 0 rgba(0, 0, 0, 0.2));
@@ -328,8 +263,10 @@ body {
     font-family: 'Silkscreen', monospace;
     color: #2c0a0a;
     text-align: center;
-    padding: 0 0 6px;
-    margin-bottom: 6px;
+    padding: 10px 0 0;
+    /* Changed padding to fit at bottom */
+    margin-bottom: 0;
+    margin-top: 6px;
     border-bottom: none;
     text-shadow:
         1px 1px 0 #ffffff,
@@ -349,7 +286,127 @@ body {
     padding: 0;
 }
 
-/* ---- Stardew Valley風ボタン（PNG背景版） ---- */
+/* Navigate パネルのボタンは 1.5倍の高さ + フォント大きめ */
+.panel-nav .wood-btn {
+    min-height: 63px;
+    font-size: 1.6rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel-nav .wood-btn span {
+    transform: scaleX(0.4);
+    transform-origin: left center;
+    overflow: visible;
+    white-space: nowrap;
+    padding-left: 8px;
+    width: 100%;
+}
+
+.panel-nav .wood-btn img {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+}
+
+.panel-social .wood-btn {
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.panel-social .wood-btn span {
+    transform: scaleX(0.5);
+    transform-origin: left center;
+    overflow: visible;
+    white-space: nowrap;
+    padding-left: 8px;
+    width: 100%;
+}
+
+.panel-social .wood-btn img {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* ---- ダッシュボード風プッシュ/プルダウン パネル共通 ---- */
+.panel-nav,
+.panel-social {
+    position: fixed;
+    top: 0;
+    width: 260px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* パネルのタイトルだけ（約60px）見えるように本体を上に隠す */
+    transform: translateY(calc(-100% + 75px));
+}
+
+.panel-nav:hover,
+.panel-social:hover {
+    transform: translateY(0);
+}
+
+/* 左右の配置位置 */
+.panel-nav {
+    left: 40px;
+}
+
+.panel-social {
+    right: 40px;
+}
+
+/* ぶら下がるロープ（擬似要素で表現） */
+.panel-nav::before,
+.panel-nav::after,
+.panel-social::before,
+.panel-social::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    /* パネルの上からさらに上へ伸びる */
+    width: 8px;
+    height: 100vh;
+    /* 画面外まで十分な長さ */
+    background: url("resource/rope.png") repeat-y center;
+    image-rendering: pixelated;
+    z-index: -1;
+}
+
+.panel-nav::before,
+.panel-social::before {
+    left: 45px;
+}
+
+.panel-nav::after,
+.panel-social::after {
+    right: 45px;
+}
+
+/* パネル内部をFlexカラムにしてタイトルを一番下に持ってくる */
+.panel-nav .panel-inner,
+.panel-social .panel-inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-nav .wood-btn-list,
+.panel-social .wood-btn-list {
+    order: 1;
+    /* ボタンリストを上に */
+}
+
+.panel-nav .panel-title,
+.panel-social .panel-title {
+    order: 2;
+    /* タイトルを下に（ハンドル代わり） */
+}
+
+/* ---- Stardew Valley風ボタン（Nine-slice版） ---- */
 .wood-btn {
     display: flex;
     align-items: center;
@@ -361,11 +418,13 @@ body {
     cursor: pointer;
     user-select: none;
     position: relative;
-    overflow: hidden;
 
-    /* Nano Banana生成のボタン背景PNGを使用 */
-    background: url("resource/nav_btn_bg.png") center / 100% 100% no-repeat;
-    border: none;
+    background: none;
+    border: 6px solid transparent;
+    border-image-source: url("resource/panel/nav_btn_sprite.png");
+    border-image-slice: 6 fill;
+    border-image-width: 6px;
+    border-image-repeat: repeat;
 
     font-family: 'Silkscreen', 'DotGothic16', monospace;
     font-size: 0.65rem;
@@ -400,7 +459,6 @@ body {
     margin-left: auto;
     margin-right: 4px;
     order: 2;
-    /* アイコンはPNG背景の上に重ねるので透過で */
     filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.3));
 }
 
@@ -416,11 +474,7 @@ body {
     order: 1;
 }
 
-/* ::before / ::after クリア（PNG版では不要） */
-.wood-btn::before,
-.wood-btn::after {
-    display: none;
-}
+
 
 /* ---- About Me 中央パネル ---- */
 .panel-about {
@@ -448,10 +502,7 @@ body {
     clip-path: polygon(0 0, 100% 0, 100% 90%, 92% 100%, 0 100%);
 }
 
-.about-paper-bg {
-    display: none;
-    /* Hide the PNG with baked checkerboard */
-}
+
 
 .about-content {
     position: static;
@@ -600,7 +651,6 @@ body {
     pointer-events: none;
 }
 
-/* 右側コンテンツ群 */
 .lower-right {
     flex: 1;
     display: flex;
@@ -608,7 +658,6 @@ body {
     gap: 16px;
 }
 
-/* Lore / Experiment 共通 */
 .lower-item {
     display: flex;
     align-items: center;
