@@ -65,3 +65,20 @@ function playWoodClick() {
 document.querySelectorAll(".wood-btn").forEach(btn => {
     btn.addEventListener("click", playWoodClick);
 });
+
+// ============================================================
+//  📐 パネル開閉トグル
+// ============================================================
+document.querySelectorAll('.panel-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('aria-controls');
+        const panel = document.getElementById(targetId);
+        if (!panel) return;
+
+        const isCollapsed = panel.classList.toggle('collapsed');
+        btn.setAttribute('aria-expanded', !isCollapsed);
+
+        // Play wood click sound
+        playWoodClick();
+    });
+});

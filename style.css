@@ -198,14 +198,63 @@ body {
 }
 
 /* =====================================================
+   ⓪ パネル開閉トグルバー
+===================================================== */
+.panel-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    position: relative;
+    z-index: 20;
+}
+
+.panel-toggle {
+    background: none;
+    border: 6px solid transparent;
+    border-image-source: url("resource/panel/nav_btn_sprite.png");
+    border-image-slice: 6 fill;
+    border-image-width: 6px;
+    border-image-repeat: repeat;
+    font-family: 'Silkscreen', monospace;
+    font-size: 0.75rem;
+    color: #2c0a0a;
+    padding: 5px 14px;
+    cursor: pointer;
+    image-rendering: pixelated;
+    text-shadow:
+        1px 1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px -1px 0 #ffffff,
+        -1px -1px 0 #ffffff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: filter 0.15s, transform 0.1s;
+    user-select: none;
+}
+
+.panel-toggle:hover {
+    filter: brightness(1.2);
+}
+
+.panel-toggle:active {
+    transform: translateY(2px) scale(0.98);
+}
+
+.toggle-spacer {
+    flex: 1;
+}
+
+/* =====================================================
    ③ 3列パネル（ぶら下がり）
 ===================================================== */
 .hanging-panels {
     display: flex;
     gap: 12px;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
     padding: 0 12px;
+    position: relative;
 }
 
 /* 各パネル共通 */
@@ -213,6 +262,33 @@ body {
     flex: 1;
     min-width: 0;
     position: relative;
+}
+
+/* ---- Nav/Social パネル前面レイヤー ---- */
+.panel-nav,
+.panel-social {
+    z-index: 10;
+    transition: flex-basis 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.4s ease,
+                margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+/* ---- About Me 背面レイヤー ---- */
+.panel-about {
+    z-index: 1;
+}
+
+/* ---- パネル折りたたみ状態 ---- */
+.panel-nav.collapsed,
+.panel-social.collapsed {
+    flex: 0 0 0px;
+    max-width: 0;
+    opacity: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 /* 揺れアニメーション */
@@ -268,6 +344,15 @@ body {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     z-index: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* 折りたたみ時ロープ非表示 */
+.panel-nav.collapsed::before,
+.panel-nav.collapsed::after,
+.panel-social.collapsed::before,
+.panel-social.collapsed::after {
+    opacity: 0;
 }
 
 .panel-nav::before,
@@ -283,25 +368,6 @@ body {
 .panel-inner {
     width: 100%;
     height: 100%;
-}
-
-/* パネルタイトル（「Navigate」「Socials」） */
-.panel-title {
-    font-size: 1.00rem;
-    font-family: 'Silkscreen', monospace;
-    color: #2c0a0a;
-    text-align: center;
-    padding: 10px 0 0;
-    margin-top: 6px;
-    margin-bottom: 0;
-    border-bottom: none;
-    text-shadow:
-        1px 1px 0 #ffffff,
-        -1px 1px 0 #ffffff,
-        1px -1px 0 #ffffff,
-        -1px -1px 0 #ffffff;
-    letter-spacing: 2px;
-    text-transform: uppercase;
 }
 
 /* ---- ボタンリスト ---- */
@@ -433,27 +499,41 @@ body {
 /* ---- About Me 中央パネル ---- */
 .panel-about {
     flex: 1.4;
+    transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.about-paper-container {
-    position: relative;
+/* ---- About Me Nine-Slice Background ---- */
+.about-nineslice {
+    display: grid;
+    grid-template-columns: 30px 1fr 30px;
+    grid-template-rows: 30px 1fr 30px;
     width: 100%;
-    /* Parchment-style box instead of overlaying PNG */
-    background: #e8d9bc;
-    background-image:
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3Crect x='2' y='2' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
-    background-size: 4px 4px;
-    border: 4px solid var(--parchment-border);
-    border-top: 4px solid #c8b080;
-    border-left: 4px solid #c8b080;
-    box-shadow: 4px 8px 0 rgba(0, 0, 0, 0.6);
+    image-rendering: pixelated;
+    filter: drop-shadow(4px 8px 0 rgba(0, 0, 0, 0.6));
+}
+
+.about-nineslice > div {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Corners */
+.ns-tl { background: url("resource/profile/profile_01.png") no-repeat; background-size: cover; }
+.ns-tr { background: url("resource/profile/profile_03.png") no-repeat; background-size: cover; }
+.ns-bl { background: url("resource/profile/profile_07.png") no-repeat; background-size: cover; }
+.ns-br { background: url("resource/profile/profile_09.png") no-repeat; background-size: cover; }
+
+/* Edges */
+.ns-tc { background: url("resource/profile/profile_02.png") repeat-x; background-size: auto 100%; }
+.ns-bc { background: url("resource/profile/profile_08.png") repeat-x; background-size: auto 100%; }
+.ns-ml { background: url("resource/profile/profile_04.png") repeat-y; background-size: 100% auto; }
+.ns-mr { background: url("resource/profile/profile_06.png") repeat-y; background-size: 100% auto; }
+
+/* Center fill */
+.ns-mc {
+    background: url("resource/profile/profile_05.png") repeat;
+    background-size: 30px 30px;
     padding: 16px 14px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    /* Curled bottom-right corner effect */
-    clip-path: polygon(0 0, 100% 0, 100% 90%, 92% 100%, 0 100%);
 }
 
 
@@ -801,16 +881,51 @@ a:hover {
 /* =====================================================
    Responsive
 ===================================================== */
-@media (max-width: 700px) {
-    .hanging-panels {
-        flex-direction: column;
-        align-items: center;
+@media (max-width: 900px) {
+    /* 中くらいの画面: パネルを少し小さく */
+    .panel-nav,
+    .panel-social {
+        flex: 0.7;
     }
 
-    .panel,
     .panel-about {
-        width: 95%;
-        flex: none;
+        flex: 1.6;
+    }
+
+    .panel-nav .wood-btn {
+        min-height: 50px;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 700px) {
+    /* パネルは縦積みにせず、About Meの上に重なったまま */
+    .hanging-panels {
+        flex-wrap: nowrap;
+    }
+
+    .panel-about {
+        flex: 2;
+    }
+
+    .panel-nav,
+    .panel-social {
+        flex: 0.6;
+        min-width: 100px;
+    }
+
+    .panel-nav .wood-btn {
+        min-height: 42px;
+        font-size: 1rem;
+    }
+
+    .panel-nav .wood-btn img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .panel-social .wood-btn {
+        font-size: 0.7rem;
     }
 
     .plant-left {
@@ -828,5 +943,24 @@ a:hover {
 
     .scroll-item {
         width: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* モバイル: パネルを更に小さく */
+    .panel-nav,
+    .panel-social {
+        flex: 0.5;
+        min-width: 80px;
+    }
+
+    .panel-about {
+        flex: 2.5;
+    }
+
+    .panel-toggle {
+        font-size: 0.6rem;
+        padding: 4px 8px;
+        letter-spacing: 1px;
     }
 }
