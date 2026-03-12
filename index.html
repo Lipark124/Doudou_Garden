@@ -28,13 +28,6 @@
     <!-- ====== メインシーン ====== -->
     <div class="board-scene">
 
-        <!-- ⓪ パネル開閉トグルバー -->
-        <div class="panel-toggle-row">
-            <button class="panel-toggle pixel-text" id="toggle-nav" aria-expanded="true" aria-controls="panel-nav">▼ Navigate ▼</button>
-            <div class="toggle-spacer"></div>
-            <button class="panel-toggle pixel-text" id="toggle-social" aria-expanded="true" aria-controls="panel-social">▼ Social Links ▼</button>
-        </div>
-
         <!-- ① タイトル木板（横幅いっぱい） -->
         <div class="title-board" id="title-board">
             <img src="resource/title.png" alt="Dream Doudou" class="title-board-img" draggable="false" />
@@ -49,8 +42,9 @@
         <div class="hanging-panels">
 
             <!-- 左：ナビゲーション -->
-            <div class="panel panel-nav" id="panel-nav">
+            <div class="panel panel-nav">
                 <div class="panel-inner wood-panel">
+                    <h2 class="panel-title pixel-text">Navigate</h2>
                     <nav class="wood-btn-list">
                         <a href="gallery/index.html" class="wood-btn" id="btn-gallery">
                             <img src="resource/icons/gallery.png" alt="" />
@@ -74,11 +68,8 @@
 
             <!-- 中央：About Me -->
             <div class="panel panel-about sway-center">
-                <div class="about-nineslice">
-                    <div class="ns-tl"></div><div class="ns-tc"></div><div class="ns-tr"></div>
-                    <div class="ns-ml"></div>
-                    <div class="ns-mc">
-                        <div class="about-content">
+                <div class="about-paper-container">
+                    <div class="about-content">
                         <h2 class="pixel-text about-title">About Me</h2>
                         <div class="profile-frame">
                             <img src="resource/doudou.png" alt="Profile" draggable="false" />
@@ -100,16 +91,14 @@
                                 <li><strong>🐦 Avali</strong> — だーーーい好き！！！</li>
                             </ul>
                         </div>
-                        </div>
                     </div>
-                    <div class="ns-mr"></div>
-                    <div class="ns-bl"></div><div class="ns-bc"></div><div class="ns-br"></div>
                 </div>
             </div>
 
             <!-- 右：ソーシャル -->
-            <div class="panel panel-social" id="panel-social">
+            <div class="panel panel-social">
                 <div class="panel-inner wood-panel">
+                    <h2 class="panel-title pixel-text">Socials</h2>
                     <nav class="wood-btn-list">
                         <a href="#" class="wood-btn" id="btn-twitter">
                             <img src="resource/icons/twitter.png" alt="" />
