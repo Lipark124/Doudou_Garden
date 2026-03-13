@@ -475,26 +475,6 @@ body {
     margin-bottom: 4px;
 }
 
-.pixel-divider {
-    border: none;
-    border-top: 2px dashed var(--parchment-border);
-    margin: 6px 0;
-}
-
-.interest-list {
-    list-style: none;
-    padding: 0;
-}
-
-.interest-list li {
-    background: rgba(255, 255, 255, 0.25);
-    border-left: 3px solid var(--wood-light);
-    padding: 3px 5px;
-    margin-bottom: 4px;
-    font-size: 0.65rem;
-    line-height: 1.4;
-}
-
 .shelf-row {
     width: 100%;
     margin-top: 0;
