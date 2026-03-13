@@ -1,132 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dream Doudou - Lipark's Study</title>
-    <meta name="description" content="Lipark's personal website. A fairy-like being studying IT & Neuroscience." />
-    <link rel="icon" href="../temp/nano_banana.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <title>Lipark Land</title>
+    <link rel="icon" href="resource/doudou.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="../style.css" />
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- ====== Background Wall ====== -->
     <div class="bg-wall"></div>
 
-    <!-- ====== Plant Decorations ====== -->
     <div class="plant-decor plant-left">
-        <img src="../resource/plants-left.png" alt="" draggable="false" />
+        <img src="resource/plants-left.png" alt="" draggable="false" />
     </div>
     <div class="plant-decor plant-right">
-        <img src="../resource/plants-right.png" alt="" draggable="false" />
+        <img src="resource/plants-right.png" alt="" draggable="false" />
     </div>
 
-    <!-- ====== Main Scene ====== -->
     <div class="board-scene">
-
-        <!-- ① Title Board -->
+        <div class="lang-switch">
+            <span class="lang-current pixel-btn">🇯🇵 JP</span>
+            <a href="en/index.html" class="lang-link pixel-btn">🇺🇸 EN</a>
+        </div>
         <div class="title-board" id="title-board">
-            <img src="../resource/title.png" alt="Dream Doudou" class="title-board-img" draggable="false" />
-            <div class="lang-switch">
-                <a href="../index.html" class="lang-link pixel-btn">🇯🇵 JP</a>
-                <span class="lang-current pixel-btn">🇺🇸 EN</span>
-            </div>
+            <img src="resource/title.png" alt="Dream Doudou" class="title-board-img" draggable="false" />
+
         </div>
 
-        <!-- ③ Three-column hanging panels -->
+
         <div class="hanging-panels">
 
-            <!-- Left: Navigate -->
-            <div class="panel panel-nav sway-left">
-                <img src="../resource/pin.png" alt="" class="panel-pin" draggable="false" />
+            <div class="panel panel-nav">
                 <div class="panel-inner wood-panel">
                     <h2 class="panel-title pixel-text">Navigate</h2>
                     <nav class="wood-btn-list">
                         <a href="gallery/index.html" class="wood-btn" id="btn-gallery">
-                            <img src="../resource/icons/gallery.png" alt="" />
+                            <img src="resource/icons/gallery.png" alt="" />
                             <span>Gallery</span>
                         </a>
                         <a href="lore/index.html" class="wood-btn" id="btn-lore">
-                            <img src="../resource/icons/lore.png" alt="" />
+                            <img src="resource/icons/lore.png" alt="" />
                             <span>Lore</span>
                         </a>
-                        <a href="cardboardbox/index.html" class="wood-btn" id="btn-experiment">
-                            <img src="../resource/icons/experiment.png" alt="" />
+                        <a href="cardboardbox/index.html" class="wood-btn" id="btn-mystery">
+                            <img src="resource/icons/mystery.png" alt="" />
                             <span>Experiment</span>
                         </a>
-                        <a href="vrchatpics/index.html" class="wood-btn" id="btn-vrchat">
-                            <img src="../resource/icons/vrchat.png" alt="" />
-                            <span>VRChat</span>
+                        <a href="vrchatpics/index.html" class="wood-btn" id="btn-journey">
+                            <img src="resource/icons/journey.png" alt="" />
+                            <span>Journey</span>
                         </a>
                     </nav>
                 </div>
             </div>
 
-            <!-- Center: About Me -->
             <div class="panel panel-about sway-center">
-                <img src="../resource/pin.png" alt="" class="panel-pin" draggable="false" />
                 <div class="about-paper-container">
-                    <img src="../resource/about_paper.png" alt="" class="about-paper-bg" draggable="false" />
                     <div class="about-content">
                         <h2 class="pixel-text about-title">About Me</h2>
                         <div class="profile-frame">
-                            <img src="../resource/doudou.png" alt="Profile" draggable="false" />
+                            <img src="resource/doudou.png" alt="Profile" draggable="false" />
                         </div>
                         <div class="about-text">
-                            <p>Hiya! Welcome to my study!<br />
-                                I'm <strong>Lipark</strong>.<br />
-                                My friends told me I'm like a fairy, and that's why my fursona is a fairy.</p>
+                            <p>Hi! I’m Lipark. I’m a Japanese uni students who likes to make art and tinker with
+                                machines.<br />
+                                Welcome to my not-so-secret hideout! Here you can find my artworks and some projects
+                                I’ve worked on.<br />
+                                As usual, this site is still very much a work in progress. There are many unfinished
+                                parts, but feel free to look around!</p>
                             <hr class="pixel-divider" />
-                            <h3>Jobs</h3>
-                            <p>Right now, I'm a uni student diving into IT and Neuroscience.</p>
-                            <hr class="pixel-divider" />
-                            <h3>Likes</h3>
-                            <ul class="interest-list">
-                                <li><strong>🔧 Tinkering</strong> — RaspberryPi AI, roaming Akihabara's electric town
-                                </li>
-                                <li><strong>📜 History</strong> — Regional history, culture & travel dreams</li>
-                                <li><strong>🥽 VR</strong> — VRChat & Beat Saber streaming goal!</li>
-                                <li><strong>🎨 Art</strong> — Doodling & logo design are fun</li>
-                                <li><strong>🐦 Avali</strong> — I loooooove them!!!</li>
-                            </ul>
+                            <h3>Major</h3>
+                            <p>IT & Neuroscience</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Socials -->
-            <div class="panel panel-social sway-right">
-                <img src="../resource/pin.png" alt="" class="panel-pin" draggable="false" />
+            <div class="panel panel-social">
                 <div class="panel-inner wood-panel">
                     <h2 class="panel-title pixel-text">Socials</h2>
                     <nav class="wood-btn-list">
                         <a href="#" class="wood-btn" id="btn-twitter">
-                            <img src="../resource/icons/twitter.png" alt="" />
+                            <img src="resource/icons/twitter.png" alt="" />
                             <span>Twitter</span>
                         </a>
                         <a href="#" class="wood-btn" id="btn-discord">
-                            <img src="../resource/icons/discord.png" alt="" />
+                            <img src="resource/icons/discord.png" alt="" />
                             <span>Discord</span>
                         </a>
                         <a href="#" class="wood-btn" id="btn-bluesky">
-                            <img src="../resource/icons/bluesky.png" alt="" />
+                            <img src="resource/icons/bluesky.png" alt="" />
                             <span>Bluesky</span>
                         </a>
                         <a href="#" class="wood-btn" id="btn-steam">
-                            <img src="../resource/icons/steam.png" alt="" />
+                            <img src="resource/icons/steam.png" alt="" />
                             <span>Steam</span>
                         </a>
                         <a href="#" class="wood-btn" id="btn-telegram">
-                            <img src="../resource/icons/telegram.png" alt="" />
+                            <img src="resource/icons/telegram.png" alt="" />
                             <span>Telegram</span>
                         </a>
                         <a href="https://neocities.org" class="wood-btn" id="btn-neocities">
-                            <img src="../resource/icons/neocities.png" alt="" />
+                            <img src="resource/icons/neocities.png" alt="" />
                             <span>Neocities</span>
                         </a>
                     </nav>
@@ -134,51 +115,40 @@
             </div>
         </div>
 
-        <!-- ④ Shelf -->
         <div class="shelf-row">
-            <img src="../resource/shelf.png" alt="" class="shelf-img" draggable="false" />
+            <img src="resource/shelf.png" alt="" class="shelf-img" draggable="false" />
         </div>
-
-        <!-- ⑤ Lower Section -->
         <div class="lower-section">
-            <!-- Gallery scroll -->
             <a href="gallery/index.html" class="lower-item scroll-item" id="lower-gallery">
-                <img src="../resource/gallery_scroll.png" alt="Gallery" draggable="false" />
+                <img src="resource/gallery_scroll.png" alt="Gallery" draggable="false" />
             </a>
 
-            <!-- Right side lower items -->
             <div class="lower-right">
-                <!-- Lore Books -->
                 <a href="lore/index.html" class="lower-item lore-item" id="lower-lore">
-                    <img src="../resource/icons/lore.png" alt="Lore" class="lower-icon" draggable="false" />
+                    <img src="resource/icons/lore.png" alt="Lore" class="lower-icon" draggable="false" />
                     <div class="lower-text-box">
                         <span class="lower-badge pixel-text">Avali</span>
                         <span class="lower-label-book pixel-text">Lore</span>
                     </div>
                 </a>
 
-                <!-- Experiment Mystery Box -->
                 <a href="cardboardbox/index.html" class="lower-item exp-item" id="lower-exp">
-                    <img src="../resource/icons/experiment.png" alt="Experiment" class="lower-icon" draggable="false" />
+                    <img src="resource/icons/mystery.png" alt="Experiment" class="lower-icon" draggable="false" />
                     <span class="lower-label pixel-text">Experiment</span>
                     <span class="sparkle" aria-hidden="true">✦</span>
                 </a>
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <p class="pixel-text">~ handled with care since 2026 ~</p>
             <a href="https://neocities.org">
-                <img src="../resource/neocities.png" alt="Hosted on Neocities" onerror="this.style.display='none'" />
+                <img src="resource/neocities.png" alt="Hosted on Neocities" onerror="this.style.display='none'" />
             </a>
         </div>
     </div>
 
-    <!-- Easter Egg: Banana Rain Container -->
-    <div id="banana-rain" aria-hidden="true"></div>
-
-    <script src="../script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
