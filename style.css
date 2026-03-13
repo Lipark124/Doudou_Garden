@@ -1,11 +1,3 @@
-/* ========================================
-   DreamDoudou - Stardew Valley Pixel Style
-   ドットアート書斎テーマ
-======================================== */
-
-
-
-/* ---- Color Variables ---- */
 :root {
     --bg-dark: #2a1f14;
     --wood-dark: #3d2a18;
@@ -28,7 +20,6 @@
     --shadow: rgba(0, 0, 0, 0.7);
 }
 
-/* ---- Reset ---- */
 *,
 *::before,
 *::after {
@@ -37,7 +28,6 @@
     box-sizing: border-box;
 }
 
-/* ---- Body ---- */
 body {
     background-color: var(--bg-dark);
     background-image: url("resource/bg_wall.png");
@@ -51,13 +41,11 @@ body {
     position: relative;
 }
 
-/* ---- Pixel Text Utility ---- */
 .pixel-text {
     font-family: 'Silkscreen', 'DotGothic16', monospace;
     image-rendering: pixelated;
 }
 
-/* ---- Plant Decorations (scrolls with page, fits within page height) ---- */
 .plant-decor {
     position: absolute;
     top: 0;
@@ -88,14 +76,12 @@ body {
     max-width: 80px;
 }
 
-/* Hide plants on narrower windows */
 @media (max-width: 1050px) {
     .plant-decor {
         display: none;
     }
 }
 
-/* ---- Board Scene Container ---- */
 .board-scene {
     position: relative;
     width: 100%;
@@ -111,9 +97,6 @@ body {
     box-shadow: 0 0 0 4px var(--border-dark), 0 0 60px rgba(0, 0, 0, 0.8);
 }
 
-/* =====================================================
-   ① タイトル木板
-===================================================== */
 .title-board {
     position: relative;
     width: 100%;
@@ -121,7 +104,6 @@ body {
     animation: titleSwing 4s ease-in-out infinite;
     transform-origin: center top;
     user-select: none;
-    /* SVG has no background — transparent behind the board */
     line-height: 0;
 }
 
@@ -135,7 +117,6 @@ body {
     height: auto;
     display: block;
     margin: 0 auto;
-    /* SVG is vector; no need for pixelated rendering */
     filter: drop-shadow(0px 6px 0 rgba(0, 0, 0, 0.5));
 }
 
@@ -155,7 +136,6 @@ body {
     }
 }
 
-/* Lang Switch */
 .lang-switch {
     position: absolute;
     top: 8px;
@@ -197,9 +177,6 @@ body {
     color: var(--text-gold);
 }
 
-/* =====================================================
-   ③ 3列パネル（ぶら下がり）
-===================================================== */
 .hanging-panels {
     display: flex;
     gap: 12px;
@@ -208,14 +185,12 @@ body {
     padding: 0 12px;
 }
 
-/* 各パネル共通 */
 .panel {
     flex: 1;
     min-width: 0;
     position: relative;
 }
 
-/* 揺れアニメーション */
 .sway-center {
     animation: swayCenter 6s ease-in-out infinite;
     transform-origin: center top;
@@ -237,8 +212,6 @@ body {
     }
 }
 
-
-/* ---- 外枠パネル（ナビ・ソーシャル共通） ---- */
 .wood-panel {
     background: none;
     border: 35px solid transparent;
@@ -253,7 +226,6 @@ body {
     filter: drop-shadow(5px 2px 0 rgba(0, 0, 0, 0.2));
 }
 
-/* ロープ（パネルの後ろからぶら下がる） */
 .panel-nav::before,
 .panel-nav::after,
 .panel-social::before,
@@ -285,7 +257,6 @@ body {
     height: 100%;
 }
 
-/* パネルタイトル（「Navigate」「Socials」） */
 .panel-title {
     font-size: 1.00rem;
     font-family: 'Silkscreen', monospace;
@@ -304,7 +275,6 @@ body {
     text-transform: uppercase;
 }
 
-/* ---- ボタンリスト ---- */
 .wood-btn-list {
     display: flex;
     flex-direction: column;
@@ -313,7 +283,6 @@ body {
     padding: 0;
 }
 
-/* Navigate パネルのボタンは 1.5倍の高さ + フォント大きめ */
 .panel-nav .wood-btn {
     min-height: 63px;
     font-size: 1.6rem;
@@ -360,7 +329,6 @@ body {
     transform: translateY(-50%);
 }
 
-/* ---- Stardew Valley風ボタン（Nine-slice版） ---- */
 .wood-btn {
     display: flex;
     align-items: center;
@@ -389,19 +357,16 @@ body {
     transition: transform 0.05s step-end;
 }
 
-/* ホバー：CSSで明るくする */
 .wood-btn:hover {
     filter: brightness(1.2);
     color: #250f00;
 }
 
-/* 押した瞬間 */
 .wood-btn:active,
 .wood-btn.pressed {
     transform: translateY(2px) scale(0.98);
 }
 
-/* アイコン（imgタグ） */
 .wood-btn img {
     width: 36px;
     height: 36px;
@@ -416,7 +381,6 @@ body {
     filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.3));
 }
 
-/* ラベルテキスト */
 .wood-btn span {
     flex: 1;
     padding: 10px 8px 10px 14px;
@@ -428,9 +392,6 @@ body {
     order: 1;
 }
 
-
-
-/* ---- About Me 中央パネル ---- */
 .panel-about {
     flex: 1.4;
 }
@@ -438,7 +399,6 @@ body {
 .about-paper-container {
     position: relative;
     width: 100%;
-    /* Parchment-style box instead of overlaying PNG */
     background: #e8d9bc;
     background-image:
         url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3Crect x='2' y='2' width='2' height='2' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
@@ -452,7 +412,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    /* Curled bottom-right corner effect */
     clip-path: polygon(0 0, 100% 0, 100% 90%, 92% 100%, 0 100%);
 }
 
@@ -536,9 +495,6 @@ body {
     line-height: 1.4;
 }
 
-/* =====================================================
-   ④ 木棚
-===================================================== */
 .shelf-row {
     width: 100%;
     margin-top: 0;
@@ -554,9 +510,6 @@ body {
     filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.6));
 }
 
-/* =====================================================
-   ⑤ 下段コンテンツ
-===================================================== */
 .lower-section {
     display: flex;
     align-items: flex-start;
@@ -564,7 +517,6 @@ body {
     padding: 20px 16px 10px;
 }
 
-/* Gallery 巻物 */
 .scroll-item {
     position: relative;
     display: block;
@@ -573,7 +525,6 @@ body {
     text-decoration: none;
     transition: transform 0.1s step-end;
     cursor: pointer;
-    /* SVG has no background — transparent area shows the wall */
     background: transparent;
 }
 
@@ -708,9 +659,6 @@ body {
     }
 }
 
-/* =====================================================
-   フッター
-===================================================== */
 .footer {
     background: linear-gradient(180deg, var(--wood-dark) 0%, #1a1208 100%);
     border-top: 4px solid var(--border-dark);
@@ -736,25 +684,6 @@ body {
     opacity: 1;
 }
 
-/* =====================================================
-   Easter Egg: バナナ雨
-===================================================== */
-#banana-rain {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    overflow: hidden;
-}
-
-.banana-drop {
-    position: absolute;
-    top: -60px;
-    font-size: 2rem;
-    animation: bananeFall linear forwards;
-    pointer-events: none;
-}
-
 @keyframes bananeFall {
     0% {
         transform: translateY(0) rotate(0deg);
@@ -767,9 +696,6 @@ body {
     }
 }
 
-/* =====================================================
-   Scrollbar
-===================================================== */
 ::-webkit-scrollbar {
     width: 10px;
 }
@@ -787,9 +713,6 @@ body {
     background: var(--wood-light);
 }
 
-/* =====================================================
-   Links
-===================================================== */
 a {
     color: var(--wood-highlight);
 }
@@ -798,9 +721,6 @@ a:hover {
     color: var(--text-gold);
 }
 
-/* =====================================================
-   Responsive
-===================================================== */
 @media (max-width: 700px) {
     .hanging-panels {
         flex-direction: column;

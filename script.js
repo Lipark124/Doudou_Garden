@@ -1,13 +1,8 @@
-// ============================================================
-//  DreamDoudou - Script
-//  Pixel Art Style Interactions
-// ============================================================
-
 // ---- Soft copy/paste/selection lock ----
 const block = (e) => e.preventDefault();
-document.addEventListener("copy",        block);
-document.addEventListener("cut",         block);
-document.addEventListener("paste",       block);
+document.addEventListener("copy", block);
+document.addEventListener("cut", block);
+document.addEventListener("paste", block);
 document.addEventListener("contextmenu", block);
 document.addEventListener("selectstart", block);
 
@@ -21,13 +16,11 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("wheel", (e) => {
     if (e.ctrlKey || e.metaKey) e.preventDefault();
 }, { passive: false });
-document.addEventListener("gesturestart",  block, { passive: false });
+document.addEventListener("gesturestart", block, { passive: false });
 document.addEventListener("gesturechange", block, { passive: false });
-document.addEventListener("gestureend",    block, { passive: false });
+document.addEventListener("gestureend", block, { passive: false });
 
-// ============================================================
-//  🪵 Button Press Animation
-// ============================================================
+// ----Button Press Animation ----
 document.querySelectorAll(".wood-btn, .scroll-item, .lower-item").forEach(btn => {
     btn.addEventListener("pointerdown", () => {
         btn.classList.add("pressed");
@@ -40,19 +33,17 @@ document.querySelectorAll(".wood-btn, .scroll-item, .lower-item").forEach(btn =>
     });
 });
 
-// ============================================================
-//  🔊 ボタンクリック音（Web Audio API）
-// ============================================================
+// ----Button Click Sound----
 let audioCtx = null;
 
 function playWoodClick() {
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc  = audioCtx.createOscillator();
+        const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.type      = "square";
+        osc.type = "square";
         osc.frequency.setValueAtTime(220, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.08);
         gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
@@ -66,9 +57,7 @@ document.querySelectorAll(".wood-btn").forEach(btn => {
     btn.addEventListener("click", playWoodClick);
 });
 
-// ============================================================
-//  📐 パネル開閉トグル
-// ============================================================
+// ----Panel Toggle----
 document.querySelectorAll('.panel-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('aria-controls');
@@ -78,7 +67,6 @@ document.querySelectorAll('.panel-toggle').forEach(btn => {
         const isCollapsed = panel.classList.toggle('collapsed');
         btn.setAttribute('aria-expanded', !isCollapsed);
 
-        // Play wood click sound
         playWoodClick();
     });
 });
