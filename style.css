@@ -47,9 +47,12 @@ body {
 }
 
 .plant-decor {
+    display: block;
     position: absolute;
     top: 0;
     height: 100%;
+    width: 100%;
+    vertical-align: bottom;
     pointer-events: none;
     z-index: 200;
     overflow: hidden;
@@ -66,13 +69,13 @@ body {
 
 .plant-left {
     left: 0;
-    width: 22vw;
+    /* width: 22vw; */
     max-width: 240px;
 }
 
 .plant-right {
     right: 0;
-    width: 5vw;
+    /* width: 5vw; */
     max-width: 80px;
 }
 
